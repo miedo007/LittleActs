@@ -32,7 +32,7 @@ class NudgeOfWeekScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.goNamed('settings'),
+            onPressed: () => context.pushNamed('settings'),
           ),
         ],
       ),
@@ -149,7 +149,42 @@ class _UpcomingMilestones extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (milestones.isEmpty) {
-      return const Text('No milestones yet.');
+      final cs = Theme.of(context).colorScheme;
+      return GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.event_busy_outlined, color: cs.primary),
+              const SizedBox(height: 8),
+              Text(
+                'No milestones yet',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Add milestones to get timely nudges before important dates.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: cs.onSurfaceVariant),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => context.goNamed('milestonePlanner'),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add milestone'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
     final sorted = [...milestones]
       ..sort((a, b) => a.nextOccurrence().compareTo(b.nextOccurrence()));
@@ -171,4 +206,3 @@ class _UpcomingMilestones extends StatelessWidget {
     );
   }
 }
-

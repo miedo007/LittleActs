@@ -33,7 +33,7 @@ class PaywallScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.goNamed('settings'),
+            onPressed: () => context.pushNamed('settings'),
           ),
         ],
       ),

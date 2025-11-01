@@ -39,7 +39,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final partner = ref.watch(partnerProvider);
     if (partner == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Settings')),
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close',
+            icon: const Icon(Icons.close_rounded),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                context.pop();
+              } else {
+                context.goNamed('nudgeOfWeek');
+              }
+            },
+          ),
+          title: const Text('Settings'),
+        ),
         body: CalmBackground(
           child: Center(
             child: Column(
@@ -59,7 +72,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')), 
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close',
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.goNamed('nudgeOfWeek');
+            }
+          },
+        ),
+        title: const Text('Settings'),
+      ), 
       body: CalmBackground(
         child: Form(
           key: _formKey,
