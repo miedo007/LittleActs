@@ -3,18 +3,44 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/widgets/glass_card.dart';
+
+enum _Plan { monthly, yearly }
+
+final _planProvider = StateProvider<_Plan>((ref) => _Plan.yearly);
 
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Example prices for display + savings calc
+    const double monthlyPrice = 7.99;
+    const double yearlyPrice = 29.99;
+    final int yearlySavingsPct = ((1 - (yearlyPrice / (12 * monthlyPrice))) * 100).round();
     final isPro = ref.watch(premiumProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Go Premium')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close',
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(''),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.goNamed('settings'),
+          ),
+        ],
+      ),
       body: CalmBackground(
+        decorative: true,
+        intensityLight: 0.14,
+        intensityDark: 0.30,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -33,7 +59,7 @@ class PaywallScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              Card(
+              GlassCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -51,7 +77,7 @@ class PaywallScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Card(
+              GlassCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -59,9 +85,32 @@ class PaywallScreen extends ConsumerWidget {
                     children: [
                       Text('Choose your plan', style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 12),
-                      const _PlanTile(label: 'Monthly', price: r'$4.99 - $8.99'),
-                      const SizedBox(height: 8),
-                      const _PlanTile(label: 'Lifetime', price: r'$39 - $59 (one-time)', highlight: true),
+                      SegmentedButton<_Plan>(
+                        showSelectedIcon: false,
+                        segments: const [
+                          ButtonSegment(value: _Plan.monthly, label: Text('Monthly')),
+                          ButtonSegment(value: _Plan.yearly, label: Text('Yearly')),
+                        ],
+                        selected: {ref.watch(_planProvider)},
+                        onSelectionChanged: (s) => ref.read(_planProvider.notifier).state = s.first,
+                      ),
+                      const SizedBox(height: 12),
+                      Builder(builder: (_) {
+                        final plan = ref.watch(_planProvider);
+                        if (plan == _Plan.monthly) {
+                          return const _PlanTile(
+                            label: 'Monthly',
+                            price: r'$7.99/month',
+                            highlight: true,
+                          );
+                        }
+                        return _PlanTile(
+                          label: 'Yearly',
+                          price: r'$29.99/year',
+                          highlight: true,
+                          note: 'Save $yearlySavingsPct% vs monthly',
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -74,11 +123,11 @@ class PaywallScreen extends ConsumerWidget {
                         await ref.read(premiumProvider.notifier).upgrade();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Premium activated')),
+                          const SnackBar(content: Text('Free trial started')),
                         );
                         context.pop();
                       },
-                child: Text(isPro ? 'Premium active' : 'Upgrade to Premium'),
+                child: Text(isPro ? 'Premium active' : 'Try for Free'),
               ),
               const SizedBox(height: 8),
               TextButton(
@@ -120,7 +169,8 @@ class _PlanTile extends StatelessWidget {
   final String label;
   final String price;
   final bool highlight;
-  const _PlanTile({required this.label, required this.price, this.highlight = false});
+  final String? note;
+  const _PlanTile({required this.label, required this.price, this.highlight = false, this.note});
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +191,10 @@ class _PlanTile extends StatelessWidget {
                 Text(label, style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 2),
                 Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+                if (note != null) ...[
+                  const SizedBox(height: 2),
+                  Text(note!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.primary)),
+                ]
               ],
             ),
           ),
@@ -158,4 +212,3 @@ class _PlanTile extends StatelessWidget {
     );
   }
 }
-

@@ -1,19 +1,20 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import 'package:nudge/models/weekly_gesture.dart';
 import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
+import 'package:nudge/shared/widgets/glass_card.dart';
+import 'package:nudge/shared/widgets/pressable.dart';
+import 'package:nudge/shared/widgets/calm_background.dart';
 
 class NudgeOfWeekScreen extends ConsumerWidget {
   const NudgeOfWeekScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch provider so UI rebuilds when gesture changes
     ref.watch(weeklyGesturesProvider);
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final isPro = ref.watch(premiumProvider);
@@ -22,19 +23,26 @@ class NudgeOfWeekScreen extends ConsumerWidget {
     final bool isReady = current.id.isNotEmpty && current.title.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("This Week's Nudge")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text("This Week's Nudge"),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.goNamed('settings'),
+          ),
+        ],
+      ),
+      body: CalmBackground(
         child: isReady
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Card(
+                  const SizedBox(height: 8),
+                  GlassCard(
                     child: ListTile(
-                      title: Text(current.title),
-                      subtitle: Text(
-                        'Category: ${current.category} • Week of ${DateFormat.yMMMEd().format(current.weekStart)}',
-                      ),
+                      title: Text(current.title, style: Theme.of(context).textTheme.titleMedium),
+                      subtitle: Text('Category:  • Week of '),
                       trailing: current.completed
                           ? const Icon(Icons.check_circle, color: Colors.green)
                           : null,
@@ -51,21 +59,18 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: FilledButton.icon(
-                          icon: const Icon(Icons.favorite),
-                          onPressed: current.completed
+                        child: Pressable(
+                          onTap: current.completed
                               ? null
                               : () async {
                                   await notifier.markComplete(current.id);
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Nice! Marked as done.'),
-                                    ),
+                                    const SnackBar(content: Text('Nice! Marked as done.')),
                                   );
                                 },
-                          label: Text(
-                            current.completed ? 'Completed' : 'Mark as done',
+                          child: FilledButton.icon(onPressed: current.completed ? null : () async { await notifier.markComplete(current.id); if (!context.mounted) return; ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nice! Marked as done.'))); }, icon: const Icon(Icons.favorite),
+                            label: Text(current.completed ? 'Completed' : 'Mark as done'),
                           ),
                         ),
                       ),
@@ -73,8 +78,7 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   TextButton.icon(
-                    onPressed: () => NotificationService()
-                        .showNowTest('Test notification', 'It works!'),
+                    onPressed: () => NotificationService().showNowTest('Test notification', 'It works!'),
                     icon: const Icon(Icons.notifications_active_outlined),
                     label: const Text('Send test notification'),
                   ),
@@ -88,8 +92,7 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                         : TextButton.icon(
                             onPressed: () => context.goNamed('paywall'),
                             icon: const Icon(Icons.lock_outline),
-                            label:
-                                const Text('Unlock streaks with Premium'),
+                            label: const Text('Unlock streaks with Premium'),
                           ),
                   ),
                 ],
@@ -99,4 +102,9 @@ class NudgeOfWeekScreen extends ConsumerWidget {
     );
   }
 }
+
+
+
+
+
 

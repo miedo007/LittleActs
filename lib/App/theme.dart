@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animations/animations.dart';
 
-// Calm-inspired, modern Material 3 theme
-final Color _seed = const Color(0xFF254159); // deep, calming blue
+// Calm-inspired, modern Material 3 theme (deeper blue)
+final Color _seed = const Color(0xFF1B3B6F);
 
 final ThemeData appTheme = _buildLightTheme();
 final ThemeData darkAppTheme = _buildDarkTheme();
 
 ThemeData _buildLightTheme() {
   final colorScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.light);
+  final baseText = GoogleFonts.plusJakartaSansTextTheme();
+  final display = GoogleFonts.playfairDisplayTextTheme();
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: colorScheme.surface,
+    // Make Scaffold transparent so our global gradient shows through
+    scaffoldBackgroundColor: Colors.transparent,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: FadeThroughPageTransitionsBuilder(),
+      },
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       foregroundColor: colorScheme.onSurface,
@@ -23,6 +35,7 @@ ThemeData _buildLightTheme() {
     cardTheme: CardThemeData(
       elevation: 1,
       surfaceTintColor: Colors.transparent,
+      color: Color.alphaBlend(colorScheme.primary.withValues(alpha: 0.08), colorScheme.surface),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -46,21 +59,46 @@ ThemeData _buildLightTheme() {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
     ),
-    textTheme: const TextTheme(
-      headlineSmall: TextStyle(fontWeight: FontWeight.w700),
-      titleLarge: TextStyle(fontWeight: FontWeight.w700),
-      titleMedium: TextStyle(fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(height: 1.3),
+    textTheme: baseText.copyWith(
+      displaySmall: display.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+      headlineSmall: display.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+      titleLarge: display.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      titleMedium: baseText.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      bodyMedium: baseText.bodyMedium?.copyWith(height: 1.35),
+    ),
+    chipTheme: ChipThemeData(
+      side: BorderSide(color: colorScheme.outlineVariant),
+      shape: const StadiumBorder(),
+      backgroundColor: Color.alphaBlend(colorScheme.primary.withValues(alpha: 0.06), colorScheme.surface),
+      selectedColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onSurface),
+      secondaryLabelStyle: TextStyle(color: colorScheme.onPrimary),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Color.alphaBlend(colorScheme.primary.withValues(alpha: 0.05), colorScheme.surface),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.primary)),
     ),
   );
 }
 
 ThemeData _buildDarkTheme() {
   final colorScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.dark);
+  final baseText = GoogleFonts.plusJakartaSansTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
+  final display = GoogleFonts.playfairDisplayTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: const Color(0xFF0F1720),
+    scaffoldBackgroundColor: Colors.transparent,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: FadeThroughPageTransitionsBuilder(),
+      },
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -95,11 +133,27 @@ ThemeData _buildDarkTheme() {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
     ),
-    textTheme: const TextTheme(
-      headlineSmall: TextStyle(fontWeight: FontWeight.w700),
-      titleLarge: TextStyle(fontWeight: FontWeight.w700),
-      titleMedium: TextStyle(fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(height: 1.3),
+    textTheme: baseText.copyWith(
+      displaySmall: display.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+      headlineSmall: display.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+      titleLarge: display.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      titleMedium: baseText.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      bodyMedium: baseText.bodyMedium?.copyWith(height: 1.35),
+    ),
+    chipTheme: ChipThemeData(
+      side: BorderSide(color: colorScheme.outlineVariant),
+      shape: const StadiumBorder(),
+      backgroundColor: Color.alphaBlend(colorScheme.primary.withValues(alpha: 0.10), colorScheme.surface),
+      selectedColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onSurface),
+      secondaryLabelStyle: TextStyle(color: colorScheme.onPrimary),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Color.alphaBlend(colorScheme.primary.withValues(alpha: 0.08), colorScheme.surface),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: colorScheme.primary)),
     ),
   );
 }

@@ -1,3 +1,4 @@
+﻿import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,9 +21,17 @@ class ProgressScreen extends ConsumerWidget {
     final s = notifier.streak();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Progress & Streak')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('Progress & Streak'),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.goNamed('settings'),
+          ),
+        ],
+      ),
+      body: CalmBackground(
         child: Column(
           children: [
             ListTile(
@@ -55,7 +64,7 @@ class ProgressScreen extends ConsumerWidget {
                         return Card(
                           child: ListTile(
                             title: Text(g.title),
-                            subtitle: Text('Week of ${DateFormat.yMMMEd().format(g.weekStart)} • ${g.category}'),
+                            subtitle: Text('Week of ${DateFormat.yMMMEd().format(g.weekStart)} â€¢ ${g.category}'),
                             trailing: g.completed
                                 ? const Icon(Icons.check_circle, color: Colors.green)
                                 : const Icon(Icons.radio_button_unchecked),

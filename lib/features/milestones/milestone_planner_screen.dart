@@ -1,3 +1,4 @@
+﻿import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,9 +30,17 @@ class _MilestonePlannerScreenState
     final isPro = ref.watch(premiumProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Milestone Planner')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('Milestone Planner'),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.goNamed('settings'),
+          ),
+        ],
+      ),
+      body: CalmBackground(
         child: Column(
           children: [
             // --- Upsell banner for Free users ---
@@ -178,7 +187,7 @@ class _MilestonePlannerScreenState
 
                         String chipText;
                         if (diff == 0) {
-                          chipText = 'Today 🎉';
+                          chipText = 'Today ðŸŽ‰';
                         } else if (diff > 0) {
                           chipText = 'In $diff day${diff == 1 ? '' : 's'}';
                         } else {
@@ -237,3 +246,4 @@ class _MilestonePlannerScreenState
     );
   }
 }
+
