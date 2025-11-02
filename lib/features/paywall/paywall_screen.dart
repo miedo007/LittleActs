@@ -101,7 +101,7 @@ class PaywallScreen extends ConsumerWidget {
                           return const _PlanTile(
                             label: 'Monthly',
                             price: r'$7.99/month',
-                            highlight: true,
+                            highlight: false,
                           );
                         }
                         return _PlanTile(
@@ -154,10 +154,10 @@ class _FeatureRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    const green = Color(0xFF53D476);
     return Row(
       children: [
-        Icon(Icons.check_circle, color: cs.primary, size: 20),
+        const Icon(Icons.check_circle, color: green, size: 20),
         const SizedBox(width: 8),
         Expanded(child: Text(text)),
       ],
@@ -176,11 +176,11 @@ class _PlanTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: highlight ? cs.primary : cs.outlineVariant),
-        color: highlight ? cs.primary.withValues(alpha: 0.06) : null,
+        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF0F3066),
+        border: Border.all(color: Colors.white, width: 1),
       ),
       child: Row(
         children: [
@@ -188,12 +188,12 @@ class _PlanTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: Theme.of(context).textTheme.titleSmall),
+                Text(label, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
-                Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+                Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
                 if (note != null) ...[
                   const SizedBox(height: 2),
-                  Text(note!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.primary)),
+                  Text(note!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF53D476), fontWeight: FontWeight.w700)),
                 ]
               ],
             ),
@@ -202,10 +202,10 @@ class _PlanTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: cs.primary,
+                color: const Color(0xFF53D476),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Best value', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onPrimary)),
+              child: Text('Best value', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
             ),
         ],
       ),

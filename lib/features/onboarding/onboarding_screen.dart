@@ -207,7 +207,14 @@ class _PlansPage extends ConsumerWidget {
     const double monthlyPrice = 7.99;
     const double yearlyPrice = 29.99;
     final int yearlySavingsPct = ((1 - (yearlyPrice / (12 * monthlyPrice))) * 100).round();
-    Widget perk(String t) => Row(children: [Icon(Icons.check_circle, color: cs.primary, size: 18), const SizedBox(width: 8), Expanded(child: Text(t))]);
+    const green = Color(0xFF53D476);
+    Widget perk(String t) => Row(
+          children: [
+            const Icon(Icons.check_circle, color: green, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(t)),
+          ],
+        );
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -242,24 +249,27 @@ class _PlansPage extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: highlight ? cs.primary : cs.outlineVariant),
-        color: highlight ? cs.primary.withValues(alpha: 0.06) : null,
+        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF0F3066),
+        border: Border.all(color: Colors.white, width: 1),
       ),
       child: Row(children: [
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: Theme.of(context).textTheme.titleSmall),
+            Text(label, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
             const SizedBox(height: 2),
-            Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-            if (note != null) ...[const SizedBox(height: 2), Text(note, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.primary))],
+            Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
+            if (note != null) ...[
+              const SizedBox(height: 2),
+              Text(note, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF53D476), fontWeight: FontWeight.w700)),
+            ],
           ]),
         ),
         if (highlight)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(8)),
-            child: Text('Best value', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onPrimary)),
+            decoration: BoxDecoration(color: const Color(0xFF53D476), borderRadius: BorderRadius.circular(8)),
+            child: Text('Best value', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
           ),
       ]),
     );

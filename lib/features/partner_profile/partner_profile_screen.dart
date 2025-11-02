@@ -1,4 +1,4 @@
-ï»¿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -142,11 +142,11 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
         const SizedBox(height: 16),
 
-        const _Bullet(text: 'Name â€” for a more personal touch'),
+        const _Bullet(text: 'Name — for a more personal touch'),
 
-        const _Bullet(text: 'Love language ratings â€” guide the kind of nudges you get'),
+        const _Bullet(text: 'Love language ratings — guide the kind of nudges you get'),
 
-        const _Bullet(text: 'Short and simple â€” less than 1 minute'),
+        const _Bullet(text: 'Short and simple — less than 1 minute'),
 
         const Spacer(),
 
@@ -190,7 +190,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 2:
 
-        desc = 'Quality time means focused attention without distractions â€” shared activities, conversations, or simple presence.';
+        desc = 'Quality time means focused attention without distractions — shared activities, conversations, or simple presence.';
 
         value = _qTime;
 
@@ -200,7 +200,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 3:
 
-        desc = 'Words of affirmation are sincere compliments, appreciation, and encouragement â€” spoken or written.';
+        desc = 'Words of affirmation are sincere compliments, appreciation, and encouragement — spoken or written.';
 
         value = _words;
 
@@ -210,7 +210,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 4:
 
-        desc = 'Acts of service are helpful gestures that reduce friction â€” doing chores, preparing something, or lending a hand.';
+        desc = 'Acts of service are helpful gestures that reduce friction — doing chores, preparing something, or lending a hand.';
 
         value = _service;
 
@@ -220,7 +220,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 5:
 
-        desc = 'Physical touch is affection through contact â€” hugs, cuddles, hand-holding, or a gentle massage.';
+        desc = 'Physical touch is affection through contact — hugs, cuddles, hand-holding, or a gentle massage.';
 
         value = _touch;
 
@@ -232,7 +232,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       default:
 
-        desc = 'Receiving gifts are thoughtful tokens â€” from small treats to meaningful surprises that show you care.';
+        desc = 'Receiving gifts are thoughtful tokens — from small treats to meaningful surprises that show you care.';
 
         value = _gifts;
 
@@ -421,6 +421,7 @@ class _RatingTile extends StatelessWidget {
   }
 
 }
+
 
 
 

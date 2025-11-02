@@ -91,13 +91,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
-                controller: _favoritesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Favorite snacks / treats / stores',
-                  hintText: 'e.g., Matcha latte, Trader Joe\'s, dark chocolate',
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F3066),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white, width: 1),
                 ),
-                maxLines: 2,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                child: TextFormField(
+                  controller: _favoritesCtrl,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    labelText: 'Favorite snacks / treats / stores',
+                    hintText: 'e.g., Matcha latte, Trader Joe\'s, dark chocolate',
+                    labelStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.white70),
+                  ),
+                  maxLines: 2,
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -109,12 +121,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 16),
               FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F3066),
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white, width: 1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
                 onPressed: () async {
                   final current = ref.read(partnerProvider);
                   if (current == null) return;
                   final updated = Partner(
                     name: current.name,
                     birthday: current.birthday,
+                    gender: current.gender,
                     loveLanguagePrimary: current.loveLanguagePrimary,
                     loveLanguageSecondary: current.loveLanguageSecondary,
                     favorites: _favoritesCtrl.text.trim().isEmpty

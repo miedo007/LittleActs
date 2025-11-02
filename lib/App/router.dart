@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../features/onboarding/onboarding_screen.dart';
-import '../features/partner_profile/partner_profile_screen.dart';
+import '../features/partner_profile/partner_profile_wizard.dart';
 import '../features/milestones/milestone_planner_screen.dart';
 import '../features/nudge/nudge_of_week_screen.dart';
 import '../features/gifts/gift_suggestions_screen.dart';

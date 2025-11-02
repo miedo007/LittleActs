@@ -17,14 +17,9 @@ class CalmBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final start = isDark ? const Color(0xFF0B1220) : scheme.surface;
-    final lightBlend = intensityLight ?? 0.12;
-    final darkBlend = intensityDark ?? 0.28;
-    final end = isDark
-        ? Color.alphaBlend(scheme.primary.withValues(alpha: darkBlend), start)
-        : Color.alphaBlend(scheme.primary.withValues(alpha: lightBlend), start);
+    // Fixed gradient as requested: top #3A87BF to bottom #474BA2
+    const topColor = Color(0xFF3A87BF);
+    const bottomColor = Color(0xFF474BA2);
 
     final content = SafeArea(
       child: Padding(padding: padding ?? const EdgeInsets.all(16), child: child),
@@ -33,10 +28,10 @@ class CalmBackground extends StatelessWidget {
     if (!decorative) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [start, end],
+            colors: [topColor, bottomColor],
           ),
         ),
         child: content,
@@ -48,10 +43,10 @@ class CalmBackground extends StatelessWidget {
         // Base gradient
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [start, end],
+              colors: [topColor, bottomColor],
             ),
           ),
         ),
@@ -59,12 +54,12 @@ class CalmBackground extends StatelessWidget {
         Positioned(
           top: -60,
           left: -40,
-          child: _orb(color: scheme.primary.withValues(alpha: isDark ? 0.18 : 0.10), size: 220),
+          child: _orb(color: topColor.withValues(alpha: 0.18), size: 220),
         ),
         Positioned(
           bottom: -40,
           right: -30,
-          child: _orb(color: scheme.secondary.withValues(alpha: isDark ? 0.16 : 0.08), size: 180),
+          child: _orb(color: bottomColor.withValues(alpha: 0.16), size: 180),
         ),
         content,
       ],

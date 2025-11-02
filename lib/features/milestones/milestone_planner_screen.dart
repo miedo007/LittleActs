@@ -65,56 +65,85 @@ class _MilestonePlannerScreenState
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Milestone name (e.g., Birthday, Anniversary)',
+                  // Styled tile for milestone name input
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F3066),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white, width: 1),
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    child: TextFormField(
+                      controller: _nameCtrl,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        labelText: 'Milestone name (e.g., Birthday, Anniversary)',
+                        labelStyle: TextStyle(color: Colors.white),
+                        hintStyle: TextStyle(color: Colors.white70),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.calendar_month),
-                          label: Text(
-                            _pickedDate == null
-                                ? 'Pick date'
-                                : DateFormat.yMMMMd().format(_pickedDate!),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F3066),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white, width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton.icon(
+                            icon: const Icon(Icons.calendar_month, color: Colors.white),
+                            label: Text(
+                              _pickedDate == null
+                                  ? 'Pick date'
+                                  : DateFormat.yMMMMd().format(_pickedDate!),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                            ),
+                            onPressed: () async {
+                              final now = DateTime.now();
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _pickedDate ?? now,
+                                firstDate: DateTime(now.year - 50),
+                                lastDate: DateTime(now.year + 50),
+                              );
+                              if (picked != null) {
+                                setState(() => _pickedDate = picked);
+                              }
+                            },
                           ),
-                          onPressed: () async {
-                            final now = DateTime.now();
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: _pickedDate ?? now,
-                              firstDate: DateTime(now.year - 50),
-                              lastDate: DateTime(now.year + 50),
-                            );
-                            if (picked != null) {
-                              setState(() => _pickedDate = picked);
-                            }
-                          },
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _repeatYearly,
-                            onChanged: (v) =>
-                                setState(() => _repeatYearly = v ?? true),
-                          ),
-                          const Text('Repeat yearly'),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _repeatYearly,
+                              onChanged: (v) => setState(() => _repeatYearly = v ?? true),
+                              side: const BorderSide(color: Colors.white),
+                              checkColor: const Color(0xFF0F3066),
+                              activeColor: Colors.white,
+                            ),
+                            const Text('Repeat yearly', style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F3066),
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white, width: 1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
                       onPressed: () async {
                         if (_formKey.currentState!.validate() &&
                             _pickedDate != null) {
@@ -214,15 +243,29 @@ class _MilestonePlannerScreenState
                           onDismissed: (_) => ref
                               .read(milestonesProvider.notifier)
                               .remove(m.id),
-                          child: Card(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F3066),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white, width: 1),
+                            ),
                             child: ListTile(
-                              title: Text(m.name),
+                              title: Text(
+                                m.name,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                              ),
                               subtitle: Text(
                                 m.repeatYearly
                                     ? 'Next: ${DateFormat.yMMMMd().format(next)}'
                                     : 'Date: ${DateFormat.yMMMMd().format(m.date)}',
+                                style: TextStyle(color: Colors.white.withOpacity(0.85)),
                               ),
-                              trailing: Chip(label: Text(chipText)),
+                              trailing: Chip(
+                                label: Text(chipText),
+                                backgroundColor: Colors.white.withOpacity(0.15),
+                                side: const BorderSide(color: Colors.white),
+                                labelStyle: const TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         );

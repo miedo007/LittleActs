@@ -66,7 +66,7 @@ class ProgressScreen extends ConsumerWidget {
                             title: Text(g.title),
                             subtitle: Text('Week of ${DateFormat.yMMMEd().format(g.weekStart)} â€¢ ${g.category}'),
                             trailing: g.completed
-                                ? const Icon(Icons.check_circle, color: Colors.green)
+                                ? const Icon(Icons.check_circle, color: Color(0xFF53D476))
                                 : const Icon(Icons.radio_button_unchecked),
                           ),
                         );

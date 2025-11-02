@@ -55,7 +55,7 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                         '${current.weekStart.toLocal().day.toString().padLeft(2, '0')}',
                       ),
                       trailing: current.completed
-                          ? const Icon(Icons.check_circle, color: Colors.green)
+                          ? const Icon(Icons.check_circle, color: Color(0xFF53D476))
                           : null,
                     ),
                   ),

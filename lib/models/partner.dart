@@ -1,6 +1,7 @@
 class Partner {
   final String name;
   final DateTime? birthday;
+  final String? gender;
   final String? loveLanguagePrimary;
   final String? loveLanguageSecondary;
   final String? favorites;
@@ -16,6 +17,7 @@ class Partner {
   Partner({
     required this.name,
     this.birthday,
+    this.gender,
     this.loveLanguagePrimary,
     this.loveLanguageSecondary,
     this.favorites,
@@ -31,6 +33,7 @@ class Partner {
   Map<String, dynamic> toJson() => {
         'name': name,
         'birthday': birthday?.toIso8601String(),
+        'gender': gender,
         'loveLanguagePrimary': loveLanguagePrimary,
         'loveLanguageSecondary': loveLanguageSecondary,
         'favorites': favorites,
@@ -48,6 +51,7 @@ class Partner {
         birthday: json['birthday'] != null
             ? DateTime.parse(json['birthday'])
             : null,
+        gender: json['gender'],
         loveLanguagePrimary: json['loveLanguagePrimary'],
         loveLanguageSecondary: json['loveLanguageSecondary'],
         favorites: json['favorites'],
