@@ -26,6 +26,7 @@ class PremiumNotifier extends StateNotifier<bool> {
   // Mock purchase / restore for now
   Future<void> upgrade() => _set(true);
   Future<void> restore() => _set(prefsBackfill());
+  Future<void> downgrade() => _set(false);
 
   // If you want restore to just read saved value:
   bool prefsBackfill() => state; // placeholder — will be replaced by real restore later

@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -135,9 +139,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   );
                 }
 
+                // Build normalized percentages (sum ≈ 100) like teaser
+                final ratings = <String, int>{
+                  'Quality Time': (partner.qualityTime ?? 0).clamp(0, 5),
+                  'Words of Affirmation': (partner.wordsOfAffirmation ?? 0).clamp(0, 5),
+                  'Acts of Service': (partner.actsOfService ?? 0).clamp(0, 5),
+                  'Physical Touch': (partner.physicalTouch ?? 0).clamp(0, 5),
+                  'Receiving Gifts': (partner.receivingGifts ?? 0).clamp(0, 5),
+                };
+                final sum = ratings.values.fold<int>(0, (a, b) => a + b);
+                int percentFor(String label) => sum > 0 ? ((ratings[label]! / sum) * 100).round() : 0;
+
                 Widget ratingRow(String label, int? value) {
-                  final v = (value ?? 0).clamp(0, 5);
-                  final pct = (v / 5 * 100).round();
+                  final pct = percentFor(label);
                   final c = colorFor(label);
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -190,6 +204,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Retake Love Language Quiz'),
                 subtitle: const Text('Update how we tailor nudges'),
                 onTap: () => context.goNamed('loveLanguageQuiz'),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.restart_alt_rounded),
+                title: const Text('Reset app (debug)'),
+                subtitle: const Text('Clear partner, milestones, gestures, premium'),
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('partner');
+                  await prefs.remove('milestones');
+                  await prefs.remove('weekly_gestures');
+                  await prefs.remove('is_premium');
+                  await ref.read(partnerProvider.notifier).clear();
+                  await ref.read(milestonesProvider.notifier).clear();
+                  ref.invalidate(weeklyGesturesProvider);
+                  await ref.read(premiumProvider.notifier).downgrade();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('App data cleared')));
+                },
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               const SizedBox(height: 12),

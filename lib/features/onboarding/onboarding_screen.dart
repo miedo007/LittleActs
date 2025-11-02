@@ -15,7 +15,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _index = 0;
 
   void _next() {
-    if (_index < 4) {
+    if (_index < 3) {
       _controller.nextPage(duration: const Duration(milliseconds: 260), curve: Curves.easeOut);
     }
   }
@@ -58,35 +58,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
                       icon: Icons.auto_graph_rounded,
                     ),
-                    _PlansPage(),
+
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              _Dots(index: _index, count: 5),
+              _Dots(index: _index, count: 4),
               const SizedBox(height: 12),
               Row(children: [
-                if (_index < 4)
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => _controller.animateToPage(4, duration: const Duration(milliseconds: 260), curve: Curves.easeOut),
-                      style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
-                      child: const Text('See plans'),
-                    ),
-                  ),
-                if (_index < 4) const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     style: FilledButton.styleFrom(shape: const StadiumBorder(), minimumSize: const Size.fromHeight(52)),
-                    onPressed: _index < 4
+                    onPressed: _index < 3
                         ? _next
                         : () async {
-                            await ref.read(premiumProvider.notifier).upgrade();
                             if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Free trial started')));
                             context.goNamed('partnerProfile');
                           },
-                    child: Text(_index < 4 ? 'Next' : 'Try for Free'),
+                    child: Text(_index < 3 ? 'Next' : 'Get Started'),
                   ),
                 ),
               ]),
@@ -289,82 +278,7 @@ class _BranchPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _PlansPage extends ConsumerWidget {
-  const _PlansPage();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
-    const double monthlyPrice = 7.99;
-    const double yearlyPrice = 29.99;
-    final int yearlySavingsPct = ((1 - (yearlyPrice / (12 * monthlyPrice))) * 100).round();
-    const green = Color(0xFF53D476);
-    Widget perk(String t) => Row(
-          children: [
-            const Icon(Icons.check_circle, color: green, size: 18),
-            const SizedBox(width: 8),
-            Expanded(child: Text(t)),
-          ],
-        );
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Make it yours', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              perk('Unlimited milestones'),
-              const SizedBox(height: 6),
-              perk('Personalized weekly gestures'),
-              const SizedBox(height: 6),
-              perk('Streak tracking & progress'),
-              const SizedBox(height: 6),
-              perk('Couple sharing (coming soon)'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        _planTile(context, cs, 'Monthly', r'$7.99/month'),
-        const SizedBox(height: 8),
-        _planTile(context, cs, 'Yearly', r'$29.99/year', highlight: true, note: 'Save $yearlySavingsPct% vs monthly'),
-        const SizedBox(height: 8),
-        Text('Prices are examples. Tap Try for Free to continue.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-      ]),
-    );
-  }
-
-  Widget _planTile(BuildContext context, ColorScheme cs, String label, String price, {bool highlight = false, String? note}) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: const Color(0xFF0F3066),
-        border: Border.all(color: Colors.white, width: 1),
-      ),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 2),
-            Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
-            if (note != null) ...[
-              const SizedBox(height: 2),
-              Text(note, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF53D476), fontWeight: FontWeight.w700)),
-            ],
-          ]),
-        ),
-        if (highlight)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: const Color(0xFF53D476), borderRadius: BorderRadius.circular(8)),
-            child: Text('Best value', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
-          ),
-      ]),
-    );
-  }
-}
+// Plans page was removed from onboarding; see Paywall instead.
 
 class _Dots extends StatelessWidget {
   final int index;
@@ -388,3 +302,4 @@ class _Dots extends StatelessWidget {
     );
   }
 }
+

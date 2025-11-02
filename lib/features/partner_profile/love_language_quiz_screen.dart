@@ -15,6 +15,7 @@ class LoveLanguageQuizScreen extends ConsumerStatefulWidget {
 
 class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen> {
   int index = 0;
+  bool _finalizing = false;
   final Map<String, int> scores = {
     'Words of Affirmation': 0,
     'Acts of Service': 0,
@@ -54,14 +55,15 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
     if (index < _questions.length - 1) {
       setState(() => index++);
     } else {
-      setState(() => index++); // move to results
+      // Finalize: save and navigate to teaser (no full results screen)
+      setState(() => _finalizing = true);
+      _saveResults(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final total = _questions.length.toDouble();
-    final isDone = index >= _questions.length;
     return Scaffold(
       appBar: AppBar(title: const Text('Love Language Quiz')),
       body: CalmBackground(
@@ -70,16 +72,16 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
           children: [
             LinearProgressIndicator(value: (index.clamp(0, _questions.length)) / total),
             const SizedBox(height: 16),
-            if (!isDone)
+            if (!_finalizing)
               _QuestionCard(
-                number: index + 1,
+                number: (index + 1).clamp(1, _questions.length),
                 total: _questions.length,
                 q: _questions[index],
                 onA: () => _answer(true),
                 onB: () => _answer(false),
               )
             else
-              _Results(scores: scores, totalQuestions: _questions.length, onSave: _saveResults),
+              const Expanded(child: Center(child: CircularProgressIndicator())),
           ],
         ),
       ),
@@ -113,7 +115,7 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
     );
     await ref.read(partnerProvider.notifier).savePartner(updated);
     if (!mounted) return;
-    context.goNamed('milestonePlanner');
+    context.goNamed('quizTeaser');
   }
 
   List<String> _topTwo(Map<String, int> map) {
@@ -298,3 +300,4 @@ class _ResultRow extends StatelessWidget {
     );
   }
 }
+
