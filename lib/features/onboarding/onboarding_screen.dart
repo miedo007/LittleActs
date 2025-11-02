@@ -44,18 +44,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: const [
                     _SplashPage(),
                     _PerkPage(
-                      title: 'Tiny Gestures, Big Impact',
-                      subtitle: 'Get a simple weekly nudge tailored to your relationship',
+                      title: 'Love thrives on the little things',
+                      subtitle: "Research shows couples who stay strong respond to each other's small bids for connection far more often than those who don't.",
                       icon: Icons.favorite_rounded,
                     ),
                     _PerkPage(
-                      title: 'Celebrate What Matters',
-                      subtitle: 'Plan milestones and never miss the moments that count',
+                      title: 'Life gets loud. Love gets crowded out.',
+                      subtitle: 'We forget dates. We miss chances. Not because we don’t care—because our brains are full.',
                       icon: Icons.cake_rounded,
                     ),
                     _PerkPage(
-                      title: 'Build a Healthy Rhythm',
-                      subtitle: 'Track streaks and watch your connection grow',
+                      title: 'Small acts, repeated, change everything.',
+                      subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
                       icon: Icons.auto_graph_rounded,
                     ),
                     _PlansPage(),
@@ -116,37 +116,52 @@ class _PerkPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.alphaBlend(cs.primary.withValues(alpha: 0.30), cs.surface),
-                  cs.primary,
-                ],
-              ),
-              boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.25), blurRadius: 24, spreadRadius: 2)],
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          right: -40,
+          child: IgnorePointer(
+            child: SizedBox(
+              width: 260,
+              height: 160,
+              child: CustomPaint(painter: _BranchPainter(color: const Color(0xFF232443))),
             ),
-            child: Icon(icon, color: cs.onPrimary, size: 56),
           ),
-          const SizedBox(height: 28),
-          Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(subtitle, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 60, left: 20, right: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.left,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800, fontSize: 28, color: const Color(0xFF232443)),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: Text(
+                    subtitle,
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: const Color(0xFF232443), fontSize: 18, height: 1.45),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -158,13 +173,41 @@ class _SplashPage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(width: 200, height: 120, child: CustomPaint(painter: _IntertwinedLogoPainter(color: cs.onSurface))),
-        const SizedBox(height: 20),
-        Text('NUDGE', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 2)),
-        const SizedBox(height: 10),
+        SizedBox(width: 220, height: 130, child: CustomPaint(painter: _IntertwinedLogoPainter(color: cs.onSurface))),
+        const SizedBox(height: 24),
+        Text(
+          'Little Acts',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+                fontSize: 54,
+                color: const Color(0xFF232443),
+              ),
+        ),
+        const SizedBox(height: 12),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Simple genuine gestures to change your life', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Love needs a nudge.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: const Color(0xFF232443),
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Small acts. Big love.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: const Color(0xFF232443),
+                  fontSize: 16,
+                ),
+          ),
         ),
       ]),
     );
@@ -195,6 +238,53 @@ class _IntertwinedLogoPainter extends CustomPainter {
     canvas.drawPath(right, stroke);
     canvas.drawPath(loop, stroke..strokeWidth = stroke.strokeWidth * 0.7);
   }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Decorative branch painter for onboarding pages
+class _BranchPainter extends CustomPainter {
+  final Color color;
+  _BranchPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final branch = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5;
+
+    // Main branch
+    final path = Path()
+      ..moveTo(size.width * 0.1, size.height * 0.9)
+      ..cubicTo(size.width * 0.35, size.height * 0.6, size.width * 0.6, size.height * 0.5, size.width * 0.95, size.height * 0.2);
+    canvas.drawPath(path, branch);
+
+    // Twigs
+    void twig(Offset from, Offset to) {
+      final p = Path()
+        ..moveTo(from.dx, from.dy)
+        ..quadraticBezierTo((from.dx + to.dx) / 2, from.dy - 12, to.dx, to.dy);
+      canvas.drawPath(p, branch..strokeWidth = 3.5);
+    }
+    twig(Offset(size.width * 0.55, size.height * 0.55), Offset(size.width * 0.75, size.height * 0.45));
+    twig(Offset(size.width * 0.7, size.height * 0.4), Offset(size.width * 0.88, size.height * 0.35));
+    twig(Offset(size.width * 0.45, size.height * 0.65), Offset(size.width * 0.62, size.height * 0.6));
+
+    // Blossoms
+    final blossom = Paint()..color = const Color(0xFFFFB6C1);
+    for (final o in [
+      Offset(size.width * 0.62, size.height * 0.58),
+      Offset(size.width * 0.78, size.height * 0.43),
+      Offset(size.width * 0.9, size.height * 0.32),
+      Offset(size.width * 0.7, size.height * 0.36),
+      Offset(size.width * 0.58, size.height * 0.62),
+    ]) {
+      canvas.drawCircle(o, 3, blossom);
+    }
+  }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

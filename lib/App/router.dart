@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/partner_profile/partner_profile_wizard.dart';
+import '../features/partner_profile/love_language_quiz_screen.dart';
 import '../features/milestones/milestone_planner_screen.dart';
 import '../features/nudge/nudge_of_week_screen.dart';
 import '../features/gifts/gift_suggestions_screen.dart';
@@ -21,6 +22,11 @@ final GoRouter appRouter = GoRouter(
       path: '/partner',
       name: 'partnerProfile',
       builder: (context, state) => const PartnerProfileScreen(),
+    ),
+    GoRoute(
+      path: '/quiz',
+      name: 'loveLanguageQuiz',
+      builder: (context, state) => const LoveLanguageQuizScreen(),
     ),
     GoRoute(
       path: '/milestones',

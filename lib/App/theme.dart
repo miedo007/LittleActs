@@ -9,9 +9,13 @@ final ThemeData appTheme = _buildLightTheme();
 final ThemeData darkAppTheme = _buildDarkTheme();
 
 ThemeData _buildLightTheme() {
-  final colorScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.light);
-  final baseText = GoogleFonts.plusJakartaSansTextTheme();
-  final display = GoogleFonts.playfairDisplayTextTheme();
+  final baseScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.light);
+  final colorScheme = baseScheme.copyWith(
+    onSurface: const Color(0xFF232443),
+    onSurfaceVariant: const Color(0xFF5D5E7C),
+  );
+  final baseText = GoogleFonts.interTextTheme();
+  final display = GoogleFonts.interTextTheme();
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
@@ -85,9 +89,13 @@ ThemeData _buildLightTheme() {
 }
 
 ThemeData _buildDarkTheme() {
-  final colorScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.dark);
-  final baseText = GoogleFonts.plusJakartaSansTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
-  final display = GoogleFonts.playfairDisplayTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
+  final baseScheme = ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.dark);
+  final colorScheme = baseScheme.copyWith(
+    onSurface: const Color(0xFF232443),
+    onSurfaceVariant: const Color(0xFF5D5E7C),
+  );
+  final baseText = GoogleFonts.interTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
+  final display = GoogleFonts.interTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,

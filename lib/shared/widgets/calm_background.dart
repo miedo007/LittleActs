@@ -17,9 +17,9 @@ class CalmBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fixed gradient as requested: top #3A87BF to bottom #474BA2
-    const topColor = Color(0xFF3A87BF);
-    const bottomColor = Color(0xFF474BA2);
+    // Fixed gradient (light): top #EDEBFC to bottom #FAFAFE
+    const topColor = Color(0xFFEDEBFC);
+    const bottomColor = Color(0xFFFAFAFE);
 
     final content = SafeArea(
       child: Padding(padding: padding ?? const EdgeInsets.all(16), child: child),

@@ -91,6 +91,108 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           key: _formKey,
           child: ListView(
             children: [
+              Text('Partner Profile', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              // Love language summary
+              Builder(builder: (context) {
+                final primary = partner.loveLanguagePrimary;
+                final secondary = partner.loveLanguageSecondary;
+                final hasAny =
+                    primary != null || secondary != null ||
+                    partner.qualityTime != null ||
+                    partner.wordsOfAffirmation != null ||
+                    partner.actsOfService != null ||
+                    partner.physicalTouch != null ||
+                    partner.receivingGifts != null;
+
+                Color colorFor(String key) {
+                  switch (key) {
+                    case 'Words of Affirmation':
+                      return const Color(0xFF6C63FF);
+                    case 'Acts of Service':
+                      return const Color(0xFF00B894);
+                    case 'Physical Touch':
+                      return const Color(0xFFFF7675);
+                    case 'Receiving Gifts':
+                      return const Color(0xFFFDCB6E);
+                    case 'Quality Time':
+                      return const Color(0xFF0984E3);
+                    default:
+                      return Theme.of(context).colorScheme.primary;
+                  }
+                }
+
+                Widget chip(String label) {
+                  final c = colorFor(label);
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: c.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: c),
+                    ),
+                    child: Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: c)),
+                  );
+                }
+
+                Widget ratingRow(String label, int? value) {
+                  final v = (value ?? 0).clamp(0, 5);
+                  final pct = (v / 5 * 100).round();
+                  final c = colorFor(label);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Expanded(child: Text(label)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(12)),
+                        child: Text('$pct%', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white)),
+                      )
+                    ]),
+                  );
+                }
+
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: hasAny
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Love language results', style: Theme.of(context).textTheme.titleSmall),
+                              const SizedBox(height: 8),
+                              Wrap(spacing: 8, runSpacing: 8, children: [
+                                if (primary != null) chip('Primary: $primary'),
+                                if (secondary != null) chip('Secondary: $secondary'),
+                              ]),
+                              const SizedBox(height: 8),
+                              ratingRow('Quality Time', partner.qualityTime),
+                              ratingRow('Words of Affirmation', partner.wordsOfAffirmation),
+                              ratingRow('Acts of Service', partner.actsOfService),
+                              ratingRow('Physical Touch', partner.physicalTouch),
+                              ratingRow('Receiving Gifts', partner.receivingGifts),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Love language results', style: Theme.of(context).textTheme.titleSmall),
+                              const SizedBox(height: 6),
+                              Text('No results yet. Take the quiz to personalize nudges.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                            ],
+                          ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.favorite_rounded),
+                title: const Text('Retake Love Language Quiz'),
+                subtitle: const Text('Update how we tailor nudges'),
+                onTap: () => context.goNamed('loveLanguageQuiz'),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              const SizedBox(height: 12),
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F3066),

@@ -19,26 +19,9 @@ class NudgeApp extends StatelessWidget {
       title: 'Nudge',
       theme: appTheme,
       darkTheme: darkAppTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       routerConfig: appRouter,
-      builder: (context, child) {
-        final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
-        final colors = Theme.of(context).colorScheme;
-        final start = isDark ? const Color(0xFF0B1220) : const Color(0xFF153759);
-        final end = isDark
-            ? Color.alphaBlend(colors.primary.withValues(alpha: 0.20), const Color(0xFF0A101A))
-            : Color.alphaBlend(colors.primary.withValues(alpha: 0.15), const Color(0xFF0E2B49));
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [start, end],
-            ),
-          ),
-          child: child,
-        );
-      },
+      builder: (context, child) => child!,
       debugShowCheckedModeBanner: false,
     );
   }

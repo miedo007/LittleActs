@@ -155,8 +155,31 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
           ],
           const Spacer(),
           FilledButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) setState(() => _step = 2);
+            onPressed: () async {
+              if (!_formKey.currentState!.validate()) return;
+              final current = ref.read(partnerProvider);
+              final updated = Partner(
+                name: _nameController.text.trim(),
+                gender: _gender == 'Other'
+                    ? (_customGenderController.text.trim().isEmpty
+                        ? current?.gender
+                        : _customGenderController.text.trim())
+                    : (_gender ?? current?.gender),
+                birthday: current?.birthday,
+                favorites: current?.favorites,
+                dislikes: current?.dislikes,
+                budget: current?.budget,
+                qualityTime: current?.qualityTime,
+                wordsOfAffirmation: current?.wordsOfAffirmation,
+                actsOfService: current?.actsOfService,
+                physicalTouch: current?.physicalTouch,
+                receivingGifts: current?.receivingGifts,
+                loveLanguagePrimary: current?.loveLanguagePrimary,
+                loveLanguageSecondary: current?.loveLanguageSecondary,
+              );
+              await ref.read(partnerProvider.notifier).savePartner(updated);
+              if (!mounted) return;
+              context.goNamed('loveLanguageQuiz');
             },
             child: const Text('Next'),
           ),
