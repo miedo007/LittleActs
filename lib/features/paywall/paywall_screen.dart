@@ -16,8 +16,8 @@ class PaywallScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Example prices for display + savings calc
     const double monthlyPrice = 7.99;
-    const double yearlyPrice = 29.99;
-    final int yearlySavingsPct = ((1 - (yearlyPrice / (12 * monthlyPrice))) * 100).round();
+    const double yearlyPrice = 49.99;
+    final int yearlySavingsPct = 40;
     final isPro = ref.watch(premiumProvider);
     final cs = Theme.of(context).colorScheme;
 
@@ -50,10 +50,11 @@ class PaywallScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Unlock Premium', style: Theme.of(context).textTheme.titleLarge),
+                    Text('Keep love alive, one small act at a time.',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
                     const SizedBox(height: 6),
                     Text(
-                      'Support your relationship with more guidance and room to grow.',
+                      'Your gentle reminder to stay thoughtful without overthinking.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
@@ -65,17 +66,31 @@ class PaywallScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      _FeatureRow(text: 'Unlimited milestones'),
+                      _FeatureRow(text: '💌 Weekly personalized gestures based on your partner\'s love language.'),
                       SizedBox(height: 8),
-                      _FeatureRow(text: 'Personalized weekly gestures'),
+                      _FeatureRow(text: '🧠 Complete your partner\'s profile and unlock full insights.'),
                       SizedBox(height: 8),
-                      _FeatureRow(text: 'Streak tracking & progress'),
+                      _FeatureRow(text: '🔔 Smart reminders: birthdays, anniversaries, and milestones handled automatically.'),
                       SizedBox(height: 8),
-                      _FeatureRow(text: 'Couple sharing (coming soon)'),
+                      _FeatureRow(text: '🎁 Bonus nudges & surprises: extra inspiration to go beyond the ordinary.'),
+                      SizedBox(height: 8),
+                      _FeatureRow(text: '❤️ Connection streak & progress tracking.'),
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Text('7-day FREE trial!', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              Text('Cancel anytime. No commitment.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 16),
+              Text('How your free trial works', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              _StepRow(icon: Icons.psychology_alt_outlined, title: 'Step 1 – Discover what makes them feel loved', text: 'Complete your partner\'s love language profile and unlock personalized weekly gestures built around what matters most to them.'),
+              const SizedBox(height: 8),
+              _StepRow(icon: Icons.mark_email_read_outlined, title: 'Step 2 – Get your first weekly nudge', text: 'Receive your first Little Act this week — a 3-minute gesture designed to strengthen your connection, effortlessly.'),
+              const SizedBox(height: 8),
+              _StepRow(icon: Icons.calendar_month_outlined, title: 'Step 3 – Stay close without pressure', text: 'You’ll get gentle reminders before milestones and optional bonus ideas to go beyond the basics.'),
               const SizedBox(height: 12),
               GlassCard(
                 child: Padding(
@@ -87,9 +102,26 @@ class PaywallScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       SegmentedButton<_Plan>(
                         showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(value: _Plan.monthly, label: Text('Monthly')),
-                          ButtonSegment(value: _Plan.yearly, label: Text('Yearly')),
+                        segments: [
+                          const ButtonSegment(value: _Plan.monthly, label: Text('Monthly')),
+                          ButtonSegment(
+                            value: _Plan.yearly,
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('Yearly'),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: cs.primary.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text('Save $yearlySavingsPct%', style: Theme.of(context).textTheme.labelSmall),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                         selected: {ref.watch(_planProvider)},
                         onSelectionChanged: (s) => ref.read(_planProvider.notifier).state = s.first,
@@ -97,25 +129,59 @@ class PaywallScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Builder(builder: (_) {
                         final plan = ref.watch(_planProvider);
-                        if (plan == _Plan.monthly) {
-                          return const _PlanTile(
-                            label: 'Monthly',
-                            price: r'$7.99/month',
-                            highlight: false,
-                          );
-                        }
-                        return _PlanTile(
-                          label: 'Yearly',
-                          price: r'$29.99/year',
-                          highlight: true,
-                          note: 'Save $yearlySavingsPct% vs monthly',
+                        return Column(
+                          children: [
+                            InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => ref.read(_planProvider.notifier).state = _Plan.monthly,
+                              child: _PlanTile(
+                                label: 'Monthly',
+                                price: r'$7.99/month',
+                                highlight: plan == _Plan.monthly,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => ref.read(_planProvider.notifier).state = _Plan.yearly,
+                              child: _PlanTile(
+                                label: 'Yearly',
+                                price: r'$49.99/year',
+                                highlight: plan == _Plan.yearly,
+                                note: 'Save $yearlySavingsPct% vs monthly',
+                              ),
+                            ),
+                          ],
                         );
                       }),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 120),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Builder(builder: (_) {
+                final plan = ref.watch(_planProvider);
+                final priceText = plan == _Plan.monthly ? r'$7.99/month' : r'$49.99/year';
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(20)),
+                  alignment: Alignment.center,
+                  child: Text('7 day FREE trial • Then ' + priceText,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.onPrimary)),
+                );
+              }),
+              const SizedBox(height: 10),
               FilledButton(
                 onPressed: isPro
                     ? null
@@ -127,19 +193,16 @@ class PaywallScreen extends ConsumerWidget {
                         );
                         context.pop();
                       },
-                child: Text(isPro ? 'Premium active' : 'Try for Free'),
+                child: Text(isPro ? 'Premium active' : 'Start your free trial'),
               ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () async {
-                  await ref.read(premiumProvider.notifier).restore();
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Restore attempted')),
-                  );
-                },
-                child: const Text('Restore purchase'),
-              ),
+              const SizedBox(height: 6),
+              Text('Cancel anytime, keep your progress.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 4),
+              Text('Purchase appears as “iTunes Store”. No ads. No spam.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
             ],
           ),
         ),
@@ -209,6 +272,35 @@ class _PlanTile extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _StepRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+  const _StepRow({required this.icon, required this.title, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: cs.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 4),
+              Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+            ],
+          ),
+        )
+      ],
     );
   }
 }
