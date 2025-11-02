@@ -137,7 +137,8 @@ class PaywallScreen extends ConsumerWidget {
                               child: _PlanTile(
                                 label: 'Monthly',
                                 price: r'$7.99/month',
-                                highlight: plan == _Plan.monthly,
+                                highlight: false,
+                                selected: plan == _Plan.monthly,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -147,8 +148,9 @@ class PaywallScreen extends ConsumerWidget {
                               child: _PlanTile(
                                 label: 'Yearly',
                                 price: r'$49.99/year',
-                                highlight: plan == _Plan.yearly,
+                                highlight: true,
                                 note: 'Save $yearlySavingsPct% vs monthly',
+                                selected: plan == _Plan.yearly,
                               ),
                             ),
                           ],
@@ -233,7 +235,8 @@ class _PlanTile extends StatelessWidget {
   final String price;
   final bool highlight;
   final String? note;
-  const _PlanTile({required this.label, required this.price, this.highlight = false, this.note});
+  final bool selected;
+  const _PlanTile({required this.label, required this.price, this.highlight = false, this.note, this.selected = false});
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +246,7 @@ class _PlanTile extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: const Color(0xFF0F3066),
-        border: Border.all(color: Colors.white, width: 1),
+        border: Border.all(color: selected ? cs.primary : Colors.white, width: selected ? 2 : 1),
       ),
       child: Row(
         children: [
