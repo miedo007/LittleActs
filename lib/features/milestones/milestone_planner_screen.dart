@@ -1,4 +1,4 @@
-﻿import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -216,7 +216,7 @@ class _MilestonePlannerScreenState
 
                         String chipText;
                         if (diff == 0) {
-                          chipText = 'Today ðŸŽ‰';
+                          chipText = 'Today 🎉';
                         } else if (diff > 0) {
                           chipText = 'In $diff day${diff == 1 ? '' : 's'}';
                         } else {
@@ -277,7 +277,7 @@ class _MilestonePlannerScreenState
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => context.goNamed('nudgeOfWeek'),
+                    onPressed: () => context.goNamed('home'),
                     child: const Text('Next: Weekly Nudge'),
                   ),
                 ),

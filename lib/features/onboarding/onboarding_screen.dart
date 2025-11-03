@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
-import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -47,50 +46,54 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       title: 'Love thrives on the little things',
                       subtitle: "Research shows couples who stay strong respond to each other's small bids for connection far more often than those who don't.",
                       icon: Icons.favorite_rounded,
+                      titleWeight: FontWeight.w800,
+                      highlightSubphrase: 'little things',
+                      highlightColor: Color(0xFFE98A39),
                     ),
                     _PerkPage(
                       title: 'Life gets loud. Love gets crowded out.',
-                      subtitle: 'We forget dates. We miss chances. Not because we don’t care—because our brains are full.',
+                      subtitle: 'We forget dates. We miss chances. Not because we don''t care — because our brains are full.',
                       icon: Icons.cake_rounded,
+                      titleWeight: FontWeight.w900,
+                      highlightSubphrase: 'Love gets crowded out.',
+                      highlightColor: Color(0xFFDD5A54),
                     ),
                     _PerkPage(
                       title: 'Small acts, repeated, change everything.',
                       subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
                       icon: Icons.auto_graph_rounded,
-                    ),
-
+                      titleWeight: FontWeight.w900,
+                      highlightSubphrase: 'change everything',
+                      highlightColor: Color(0xFF3666D1),
+                      ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              _Dots(index: _index, count: 4),
+              _Dots(index: _index, count: 4, activeColor: Color(0xFF695AD3)),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
                   child: FilledButton(
-                    style: FilledButton.styleFrom(shape: const StadiumBorder(), minimumSize: const Size.fromHeight(52)),
+                    style: FilledButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      minimumSize: const Size.fromHeight(52),
+                      backgroundColor: const Color(0xFF695AD3),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     onPressed: _index < 3
                         ? _next
                         : () async {
                             if (!context.mounted) return;
                             context.goNamed('partnerProfile');
                           },
-                    child: Text(_index < 3 ? 'Next' : 'Get Started'),
+                    child: Text(_index < 3 ? 'Continue' : 'Get Started'),
                   ),
                 ),
               ]),
             ]),
           ),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                tooltip: 'Close',
-                icon: const Icon(Icons.close_rounded),
-                onPressed: () => context.goNamed('partnerProfile'),
-              ),
-            ),
-          ),
+          // Close button removed per spec
         ],
       ),
     );
@@ -101,7 +104,17 @@ class _PerkPage extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  const _PerkPage({required this.title, required this.subtitle, required this.icon});
+  final FontWeight? titleWeight;
+  final String? highlightSubphrase;
+  final Color? highlightColor;
+  const _PerkPage({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    this.titleWeight,
+    this.highlightSubphrase,
+    this.highlightColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,14 +139,7 @@ class _PerkPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.left,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800, fontSize: 28, color: const Color(0xFF232443)),
-                ),
+                _buildTitle(context),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.9,
@@ -143,7 +149,7 @@ class _PerkPage extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
-                        ?.copyWith(color: const Color(0xFF232443), fontSize: 18, height: 1.45),
+                        ?.copyWith(color: const Color(0xFF232443), fontSize: 18, height: 1.45, fontWeight: FontWeight.w400),
                   ),
                 ),
               ],
@@ -151,6 +157,43 @@ class _PerkPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+extension on _PerkPage {
+  Widget _buildTitle(BuildContext context) {
+    final baseStyle = Theme.of(context)
+        .textTheme
+        .titleLarge
+        ?.copyWith(
+            fontWeight: titleWeight ?? FontWeight.w800,
+            fontSize: 28,
+            color: const Color(0xFF232443));
+
+    if (highlightSubphrase == null || highlightSubphrase!.isEmpty) {
+      return Text(title, textAlign: TextAlign.left, style: baseStyle);
+    }
+
+    final idx = title.toLowerCase().indexOf(highlightSubphrase!.toLowerCase());
+    if (idx < 0) {
+      return Text(title, textAlign: TextAlign.left, style: baseStyle);
+    }
+
+    final before = title.substring(0, idx);
+    final match = title.substring(idx, idx + highlightSubphrase!.length);
+    final after = title.substring(idx + highlightSubphrase!.length);
+
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          TextSpan(text: before),
+          TextSpan(text: match, style: baseStyle?.copyWith(color: highlightColor ?? const Color(0xFFFFA726))),
+          TextSpan(text: after),
+        ],
+      ),
+      textAlign: TextAlign.left,
     );
   }
 }
@@ -283,7 +326,8 @@ class _BranchPainter extends CustomPainter {
 class _Dots extends StatelessWidget {
   final int index;
   final int count;
-  const _Dots({required this.index, required this.count});
+  final Color? activeColor;
+  const _Dots({required this.index, required this.count, this.activeColor});
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -296,10 +340,19 @@ class _Dots extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           height: 6,
           width: active ? 18 : 6,
-          decoration: BoxDecoration(color: active ? cs.primary : cs.outlineVariant, borderRadius: BorderRadius.circular(6)),
+          decoration: BoxDecoration(
+              color: active ? (activeColor ?? cs.primary) : cs.outlineVariant,
+              borderRadius: BorderRadius.circular(6)),
         );
       }),
     );
   }
 }
+
+
+
+
+
+
+
 

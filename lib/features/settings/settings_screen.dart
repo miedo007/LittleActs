@@ -51,7 +51,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (Navigator.of(context).canPop()) {
                 context.pop();
               } else {
-                context.goNamed('nudgeOfWeek');
+                context.goNamed('home');
               }
             },
           ),
@@ -84,7 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (Navigator.of(context).canPop()) {
               context.pop();
             } else {
-              context.goNamed('nudgeOfWeek');
+              context.goNamed('home');
             }
           },
         ),

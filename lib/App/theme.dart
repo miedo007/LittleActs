@@ -14,8 +14,8 @@ ThemeData _buildLightTheme() {
     onSurface: const Color(0xFF232443),
     onSurfaceVariant: const Color(0xFF5D5E7C),
   );
-  final baseText = GoogleFonts.interTextTheme();
-  final display = GoogleFonts.interTextTheme();
+  final baseText = GoogleFonts.plusJakartaSansTextTheme();
+  final display = GoogleFonts.plusJakartaSansTextTheme();
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
@@ -94,8 +94,10 @@ ThemeData _buildDarkTheme() {
     onSurface: const Color(0xFF232443),
     onSurfaceVariant: const Color(0xFF5D5E7C),
   );
-  final baseText = GoogleFonts.interTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
-  final display = GoogleFonts.interTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
+  final baseText = GoogleFonts.plusJakartaSansTextTheme(
+      ThemeData(brightness: Brightness.dark).textTheme);
+  final display = GoogleFonts.plusJakartaSansTextTheme(
+      ThemeData(brightness: Brightness.dark).textTheme);
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,

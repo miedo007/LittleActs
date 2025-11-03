@@ -53,7 +53,7 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
         title: const Text('Love Language Quiz'),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.goNamed('nudgeOfWeek'),
+          onPressed: () => context.goNamed('home'),
         ),
       ),
       body: CalmBackground(
@@ -91,7 +91,7 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 if (isPro) {
-                  context.goNamed('nudgeOfWeek');
+                  context.goNamed('home');
                 } else {
                   context.goNamed('paywall');
                 }

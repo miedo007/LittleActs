@@ -76,6 +76,53 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     );
   }
 
+  // Limit refreshes per week within same category (max 2)
+  Future<bool> refreshWithinSameCategory() async {
+    final ws = _startOfWeek(DateTime.now());
+    final id = _weekId(ws);
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'refresh_count_$id';
+    final count = prefs.getInt(key) ?? 0;
+    if (count >= 2) return false;
+
+    final idx = state.indexWhere((g) => g.id == id);
+    if (idx < 0) {
+      await _ensureThisWeekGesture();
+    }
+    final current = currentWeek();
+    final cat = current.category;
+
+    WeeklyGesture generateSameCat() {
+      final partner = _ref.read(partnerProvider);
+      // shift seed to vary suggestion
+      final seed = DateTime.now().add(Duration(minutes: count + 1));
+      final g = _generateGesture(partner, seed);
+      return g.copyWith(id: current.id, weekStart: current.weekStart, category: cat);
+    }
+
+    final replacement = generateSameCat();
+    state = [
+      for (final g in state) if (g.id == id) replacement else g,
+    ];
+    await _save();
+    await prefs.setInt(key, count + 1);
+    return true;
+  }
+
+  // Expose remaining refreshes for current week (max 2)
+  Future<int> refreshesLeftForCurrentWeek() async {
+    final ws = _startOfWeek(DateTime.now());
+    final id = _weekId(ws);
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'refresh_count_$id';
+    final count = prefs.getInt(key) ?? 0;
+    final left = 2 - count;
+    return left < 0 ? 0 : left;
+  }
+
+  List<WeeklyGesture> completedActs() =>
+      state.where((g) => g.completed).toList()
+        ..sort((a, b) => b.weekStart.compareTo(a.weekStart));
   Future<void> _ensureThisWeekGesture() async {
     final ws = _startOfWeek(DateTime.now());
     final id = _weekId(ws);
@@ -157,8 +204,14 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     final diversity = ['service', 'time', 'words', 'gift', 'touch'];
     final ordered = <dynamic>{...byLove, ...diversity}.toList();
 
-    final catIndex = weekStart.millisecondsSinceEpoch % ordered.length;
-    final category = ordered[catIndex];
+    String category;
+    // For the first ever gesture we create, force primary love language
+    if (state.isEmpty && byLove.isNotEmpty) {
+      category = byLove.first;
+    } else {
+      final catIndex = weekStart.millisecondsSinceEpoch % ordered.length;
+      category = ordered[catIndex];
+    }
 
     String pickFrom(List<String> items) {
       final i = (weekStart.day + weekStart.month + weekStart.year) % items.length;
@@ -191,6 +244,39 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
       category: category,
       weekStart: weekStart,
     );
+  }
+
+  // Return the bonus act if present, else null (does not mutate state)
+  WeeklyGesture? findBonusForCurrentWeek() {
+    final ws = _startOfWeek(DateTime.now());
+    final baseId = _weekId(ws);
+    final bonusId = '${baseId}-bonus';
+    return state.firstWhere(
+      (g) => g.id == bonusId,
+      orElse: () => WeeklyGesture(id: '', title: '', category: '', weekStart: ws),
+    ).id == bonusId
+        ? state.firstWhere((g) => g.id == bonusId)
+        : null;
+  }
+
+  // Ensure a bonus act exists for current week; create & persist if missing.
+  Future<void> ensureBonusForCurrentWeek() async {
+    final ws = _startOfWeek(DateTime.now());
+    final baseId = _weekId(ws);
+    final bonusId = '${baseId}-bonus';
+    if (state.any((g) => g.id == bonusId)) return;
+
+    final main = currentWeek();
+    final partner = _ref.read(partnerProvider);
+    final seed = DateTime.now().add(const Duration(minutes: 3));
+    var suggestion = _generateGesture(partner, seed);
+    suggestion = suggestion.copyWith(
+      id: bonusId,
+      weekStart: ws,
+      category: main.category.isNotEmpty ? main.category : suggestion.category,
+    );
+    state = [...state, suggestion];
+    await _save();
   }
 
   // ---------- Actions ----------
