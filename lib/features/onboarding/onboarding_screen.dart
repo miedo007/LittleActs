@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
@@ -52,7 +52,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     _PerkPage(
                       title: 'Life gets loud. Love gets crowded out.',
-                      subtitle: 'We forget dates. We miss chances. Not because we don''t care — because our brains are full.',
+                      subtitle: 'We forget dates. We miss chances. Not because we don''t care � because our brains are full.',
                       icon: Icons.cake_rounded,
                       titleWeight: FontWeight.w900,
                       highlightSubphrase: 'Love gets crowded out.',
@@ -205,7 +205,11 @@ class _SplashPage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(width: 220, height: 130, child: CustomPaint(painter: _IntertwinedLogoPainter(color: cs.onSurface))),
+        SizedBox(
+          width: 260,
+          height: 260,
+          child: Image.asset('assets/logo.png', fit: BoxFit.contain, color: null),
+        ),
         const SizedBox(height: 24),
         Text(
           'Little Acts',
@@ -221,7 +225,7 @@ class _SplashPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Love needs a nudge.',
+            'Love made effortless',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: const Color(0xFF232443),
@@ -233,7 +237,7 @@ class _SplashPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Small acts. Big love.',
+            'Small acts. Big love',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: const Color(0xFF232443),
@@ -348,6 +352,7 @@ class _Dots extends StatelessWidget {
     );
   }
 }
+
 
 
 
