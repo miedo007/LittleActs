@@ -93,13 +93,16 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  for (final e in sorted.skip(1))
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _BlurredRow(
-                        label: e.key,
-                        percent: e.value,
-                        color: colors[e.key] ?? cs.primary,
+                  for (int i = 0; i < sorted.length - 1; i++)
+                    _FadeSlideIn(
+                      delayMs: 120 + 80 * i,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _BlurredRow(
+                          label: sorted[i + 1].key,
+                          percent: sorted[i + 1].value,
+                          color: colors[sorted[i + 1].key] ?? cs.primary,
+                        ),
                       ),
                     ),
                 ],
@@ -178,11 +181,16 @@ class _PrimaryCard extends StatelessWidget {
                 SizedBox(
                   width: ringSize,
                   height: ringSize,
-                  child: CircularProgressIndicator(
-                    value: (percent.clamp(0, 100)) / 100.0,
-                    strokeWidth: stroke,
-                    valueColor: AlwaysStoppedAnimation(color),
-                    backgroundColor: Colors.transparent,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: (percent.clamp(0, 100)) / 100.0),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: stroke,
+                      valueColor: AlwaysStoppedAnimation(color),
+                      backgroundColor: Colors.transparent,
+                    ),
                   ),
                 ),
                 Text(
@@ -254,6 +262,42 @@ class _BlurredRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FadeSlideIn extends StatefulWidget {
+  final Widget child;
+  final int delayMs;
+  const _FadeSlideIn({required this.child, this.delayMs = 0});
+
+  @override
+  State<_FadeSlideIn> createState() => _FadeSlideInState();
+}
+
+class _FadeSlideInState extends State<_FadeSlideIn> with SingleTickerProviderStateMixin {
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: widget.delayMs)).then((_) {
+      if (mounted) setState(() => _visible = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+      opacity: _visible ? 1 : 0,
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+        offset: _visible ? Offset.zero : const Offset(0, 0.06),
+        child: widget.child,
       ),
     );
   }

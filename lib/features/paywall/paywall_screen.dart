@@ -4,38 +4,25 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/widgets/glass_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-enum _Plan { monthly, yearly }
+enum _Plan { weekly, yearly }
 
-final _planProvider = StateProvider<_Plan>((ref) => _Plan.yearly);
+final _planProvider = StateProvider<_Plan>((ref) => _Plan.weekly);
+final _trialEnabledProvider = StateProvider<bool>((ref) => true);
 
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double monthlyPrice = 7.99;
+    const double weeklyPrice = 5.99;
     const double yearlyPrice = 49.99;
     final int yearlySavingsPct = 40;
     final isPro = ref.watch(premiumProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close',
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(''),
-        actions: [
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.pushNamed('settings'),
-          ),
-        ],
-      ),
       body: CalmBackground(
         decorative: true,
         intensityLight: 0.14,
@@ -44,101 +31,37 @@ class PaywallScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 16),
+              const SizedBox(height: 8),
+              Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const _PulseLogo(size: 120),
+                    const SizedBox(height: 12),
                     Text(
-                      'Keep love alive, one small act at a time.',
+                      'Unlimited Access',
                       style: Theme.of(context)
                           .textTheme
                           .titleLarge
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Your gentle reminder to stay thoughtful without overthinking.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: cs.onSurfaceVariant),
-                    ),
                   ],
                 ),
               ),
-              GlassCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      _FeatureRow(
-                        text:
-                            "💌 Weekly personalized gestures: small actions based on your partner’s love language.",
-                      ),
-                      SizedBox(height: 8),
-                      _FeatureRow(
-                        text:
-                            "🧠 Complete your partner’s love language profile: unlock full insights to understand what makes them feel most loved.",
-                      ),
-                      SizedBox(height: 8),
-                      _FeatureRow(
-                        text:
-                            "🔔 Smart reminders: birthdays, anniversaries, and milestones handled automatically.",
-                      ),
-                      SizedBox(height: 8),
-                      _FeatureRow(
-                        text:
-                            "🎁 Bonus nudges & surprises: extra inspiration to go beyond the ordinary.",
-                      ),
-                      SizedBox(height: 8),
-                      _FeatureRow(
-                        text:
-                            "❤️ Connection streak & progress tracking: see how consistency strengthens your relationship over time.",
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '7-day FREE trial!',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              Text(
-                'Cancel anytime. No commitment.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: cs.onSurfaceVariant),
-              ),
               const SizedBox(height: 16),
-              Text('How your free trial works',
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              const _StepRow(
-                icon: Icons.psychology_alt_outlined,
-                title: 'Step 1 – Discover what makes them feel loved',
-                text:
-                    "Complete your partner’s love language profile and unlock personalized weekly gestures built around what matters most to them.",
-              ),
-              const SizedBox(height: 8),
-              const _StepRow(
-                icon: Icons.mark_email_read_outlined,
-                title: 'Step 2 – Get your first weekly nudge',
-                text:
-                    'Receive your first Little Act this week — a 3-minute gesture designed to strengthen your connection, effortlessly.',
-              ),
-              const SizedBox(height: 8),
-              const _StepRow(
-                icon: Icons.calendar_month_outlined,
-                title: 'Step 3 – Stay close without pressure',
-                text:
-                    'You’ll get gentle reminders before milestones and optional bonus ideas to go beyond the basics.',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    _FeatureRow(icon: Icons.psychology_rounded, text: 'Love-language insights: understand them deeply.'),
+                    SizedBox(height: 8),
+                    _FeatureRow(icon: Icons.favorite_rounded, text: 'Weekly gestures: small acts, big impact.'),
+                    SizedBox(height: 8),
+                    _FeatureRow(icon: Icons.notifications_active_rounded, text: 'Smart reminders: never miss a moment.'),
+                    SizedBox(height: 8),
+                    _FeatureRow(icon: Icons.emoji_events_rounded, text: 'Progress & extras: stay consistent effortlessly.'),
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
               GlassCard(
@@ -147,71 +70,70 @@ class PaywallScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Choose your plan',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      SegmentedButton<_Plan>(
-                        showSelectedIcon: false,
-                        segments: [
-                          const ButtonSegment(
-                              value: _Plan.monthly, label: Text('Monthly')),
-                          ButtonSegment(
-                            value: _Plan.yearly,
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('Yearly'),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        cs.primary.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text('Save $yearlySavingsPct%',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        selected: {ref.watch(_planProvider)},
-                        onSelectionChanged: (s) =>
-                            ref.read(_planProvider.notifier).state = s.first,
-                      ),
-                      const SizedBox(height: 12),
+                      // Removed 'Choose your plan' title
+                      const SizedBox(height: 4),
                       Builder(builder: (_) {
                         final plan = ref.watch(_planProvider);
                         return Column(
                           children: [
+                            // Yearly on top
                             InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => ref
-                                  .read(_planProvider.notifier)
-                                  .state = _Plan.monthly,
+                              onTap: () => ref.read(_planProvider.notifier).state = _Plan.yearly,
                               child: _PlanTile(
-                                label: 'Monthly',
-                                price: r'$7.99/month',
-                                highlight: false,
-                                selected: plan == _Plan.monthly,
+                                label: 'Yearly',
+                                price: r'$49.99/year',
+                                highlight: true,
+                                note: 'Best value',
+                                selected: plan == _Plan.yearly,
                               ),
                             ),
                             const SizedBox(height: 8),
                             InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => ref
-                                  .read(_planProvider.notifier)
-                                  .state = _Plan.yearly,
+                              onTap: () => ref.read(_planProvider.notifier).state = _Plan.weekly,
                               child: _PlanTile(
-                                label: 'Yearly',
-                                price: r'$49.99/year',
-                                highlight: true, // Always best value on yearly
-                                note: 'Save $yearlySavingsPct% vs monthly',
-                                selected: plan == _Plan.yearly,
+                                label: 'Weekly',
+                                price: r'$5.99/week',
+                                highlight: false,
+                                selected: plan == _Plan.weekly,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.transparent),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Free trial enabled',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: cs.onSurfaceVariant),
+                                  ),
+                                  const Spacer(),
+                                  Transform.scale(
+                                    scale: 0.85,
+                                    child: Switch(
+                                      value: ref.watch(_trialEnabledProvider),
+                                      onChanged: (v) => ref.read(_trialEnabledProvider.notifier).state = v,
+                                      activeTrackColor: const Color(0xFF53D476),
+                                      activeColor: Colors.white, // white thumb when ON
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: Text(
+                                'No payment required today',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -231,28 +153,14 @@ class PaywallScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Builder(builder: (_) {
-                final plan = ref.watch(_planProvider);
-                final priceText =
-                    plan == _Plan.monthly ? r'$7.99/month' : r'$49.99/year';
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                      color: cs.primary,
-                      borderRadius: BorderRadius.circular(20)),
-                  alignment: Alignment.center,
-                  child: Text('7-day FREE trial • Then $priceText',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelLarge
-                          ?.copyWith(color: cs.onPrimary)),
-                );
-              }),
-              const SizedBox(height: 10),
               FilledButton(
+                style: FilledButton.styleFrom(
+                  shape: const StadiumBorder(),
+                  minimumSize: const Size.fromHeight(52),
+                  backgroundColor: const Color(0xFF695AD3),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                ),
                 onPressed: isPro
                     ? null
                     : () async {
@@ -263,26 +171,50 @@ class PaywallScreen extends ConsumerWidget {
                         );
                         context.pop();
                       },
-                child:
-                    Text(isPro ? 'Premium active' : 'Start your free trial'),
+                child: Text(isPro ? 'Premium active' : 'Try 3 days free'),
               ),
               const SizedBox(height: 6),
-              Text(
-                'Cancel anytime, keep your progress.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: cs.onSurfaceVariant),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "Purchase appears as 'iTunes Store'. No ads. No spam.",
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: cs.onSurfaceVariant),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () async {
+                      final uri = Uri.parse('https://docs.google.com/document/d/1GGduvRVdPEk4ASX04e5As3OERoDEkq9NyKAhaqj2nJg/edit?usp=sharing');
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    child: Text(
+                      'Privacy Policy',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant, decoration: TextDecoration.underline),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () async {
+                      final uri = Uri.parse('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    child: Text(
+                      'Terms of Use',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant, decoration: TextDecoration.underline),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -293,18 +225,71 @@ class PaywallScreen extends ConsumerWidget {
 }
 
 class _FeatureRow extends StatelessWidget {
+  final IconData icon;
   final String text;
-  const _FeatureRow({required this.text});
+  const _FeatureRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
-    const green = Color(0xFF53D476);
+    final cs = Theme.of(context).colorScheme;
+    final base = Theme.of(context).textTheme.bodyLarge; // larger text
+    final parts = text.split(':');
+    final lead = parts.isNotEmpty ? parts.first.trim() : text;
+    final rest = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.check_circle, color: green, size: 20),
-        const SizedBox(width: 8),
-        Expanded(child: Text(text)),
+        Icon(icon, color: cs.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: base?.copyWith(color: cs.onSurface, height: 1.25),
+              children: [
+                TextSpan(text: lead, style: base?.copyWith(fontWeight: FontWeight.w700)),
+                if (rest.isNotEmpty) const TextSpan(text: ': '),
+                if (rest.isNotEmpty) TextSpan(text: rest),
+              ],
+            ),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _PulseLogo extends StatefulWidget {
+  final double size;
+  const _PulseLogo({required this.size});
+  @override
+  State<_PulseLogo> createState() => _PulseLogoState();
+}
+
+class _PulseLogoState extends State<_PulseLogo> with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  late final Animation<double> _a;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200))
+      ..repeat(reverse: true);
+    _a = Tween<double>(begin: 0.96, end: 1.04)
+        .animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _a,
+      builder: (context, child) => Transform.scale(scale: _a.value, child: child),
+      child: Image.asset('assets/logo.png', width: widget.size, height: widget.size),
     );
   }
 }
@@ -330,10 +315,13 @@ class _PlanTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: const Color(0xFF0F3066),
+        color: selected
+            ? Color.alphaBlend(cs.primary.withOpacity(0.06), Colors.white)
+            : Colors.white,
         border: Border.all(
-            color: selected ? cs.primary : Colors.white,
-            width: selected ? 2 : 1),
+          color: selected ? cs.primary : cs.outlineVariant,
+          width: selected ? 2 : 1,
+        ),
       ),
       child: Row(
         children: [
@@ -346,8 +334,7 @@ class _PlanTile extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .titleSmall
-                      ?.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.w700),
+                      ?.copyWith(color: cs.onSurface, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -355,7 +342,7 @@ class _PlanTile extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
-                      ?.copyWith(color: Colors.white70),
+                      ?.copyWith(color: cs.onSurfaceVariant),
                 ),
                 if (note != null) ...[
                   const SizedBox(height: 2),
@@ -364,9 +351,7 @@ class _PlanTile extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .labelSmall
-                        ?.copyWith(
-                            color: const Color(0xFF53D476),
-                            fontWeight: FontWeight.w700),
+                        ?.copyWith(color: const Color(0xFF53D476), fontWeight: FontWeight.w700),
                   ),
                 ]
               ],
@@ -374,55 +359,21 @@ class _PlanTile extends StatelessWidget {
           ),
           if (highlight)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF53D476),
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Best value',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: Colors.white)),
+              child: Text('Save 90%',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
             ),
+          const SizedBox(width: 8),
+          if (selected)
+            const Icon(Icons.check_circle, color: Color(0xFF695AD3)),
         ],
       ),
     );
   }
 }
 
-class _StepRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String text;
-  const _StepRow({required this.icon, required this.title, required this.text});
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: cs.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(height: 4),
-              Text(
-                text,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: cs.onSurfaceVariant),
-              ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-}
