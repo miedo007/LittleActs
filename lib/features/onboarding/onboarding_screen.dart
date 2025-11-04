@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
-
+import 'dart:math' as math;
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -40,7 +40,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: PageView(
                   controller: _controller,
                   onPageChanged: (i) => setState(() => _index = i),
-                  children: const [
+                                    children: [
                     _SplashPage(),
                     _PerkPage(
                       title: 'Love thrives on the little things',
@@ -52,7 +52,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     _PerkPage(
                       title: 'Life gets loud. Love gets crowded out.',
-                      subtitle: 'We forget dates. We miss chances. Not because we don''t care � because our brains are full.',
+                      subtitle: 'We forget dates. We miss chances. Not because we don\'t care — because our brains are full.',
                       icon: Icons.cake_rounded,
                       titleWeight: FontWeight.w900,
                       highlightSubphrase: 'Love gets crowded out.',
@@ -65,7 +65,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       titleWeight: FontWeight.w900,
                       highlightSubphrase: 'change everything',
                       highlightColor: Color(0xFF3666D1),
-                      ),
+                    ),
                   ],
                 ),
               ),
@@ -102,6 +102,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 class _PerkPage extends StatelessWidget {
   final String title;
+  final String? imageAsset;
   final String subtitle;
   final IconData icon;
   final FontWeight? titleWeight;
@@ -111,6 +112,7 @@ class _PerkPage extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    this.imageAsset,
     this.titleWeight,
     this.highlightSubphrase,
     this.highlightColor,
@@ -121,14 +123,10 @@ class _PerkPage extends StatelessWidget {
     return Stack(
       children: [
         Positioned(
-          top: 0,
-          right: -40,
+          top: -20,
+          right: -50,
           child: IgnorePointer(
-            child: SizedBox(
-              width: 260,
-              height: 160,
-              child: CustomPaint(painter: _BranchPainter(color: const Color(0xFF232443))),
-            ),
+            child: _FloatingBranch(asset: imageAsset ?? 'assets/branch.png', width: 340),
           ),
         ),
         Align(
@@ -279,6 +277,50 @@ class _IntertwinedLogoPainter extends CustomPainter {
 }
 
 // Decorative branch painter for onboarding pages
+class _FloatingBranch extends StatefulWidget {
+  final String asset;
+  final double width;
+  const _FloatingBranch({required this.asset, required this.width});
+  @override
+  State<_FloatingBranch> createState() => _FloatingBranchState();
+}
+
+class _FloatingBranchState extends State<_FloatingBranch>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat();
+  }
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        final t = _c.value * 2 * 3.1415926; // 0..2pi
+        final dy = math.sin(t) * 3; // gentle float
+        final scale = 1 + math.cos(t) * 0.007;
+        final angle = math.sin(t) * 0.009; // ~1.7 degrees
+        return Transform.translate(
+          offset: Offset(-1 + math.cos(t)*2, dy),
+          child: Transform.rotate(
+            angle: angle,
+            child: Transform.scale(
+              scale: scale,
+              child: Image.asset(widget.asset, width: widget.width, fit: BoxFit.contain),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 class _BranchPainter extends CustomPainter {
   final Color color;
   _BranchPainter({required this.color});
@@ -352,6 +394,20 @@ class _Dots extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
