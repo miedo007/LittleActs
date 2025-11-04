@@ -79,7 +79,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       shape: const StadiumBorder(),
                       minimumSize: const Size.fromHeight(52),
                       backgroundColor: const Color(0xFF695AD3),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                     ),
                     onPressed: _index < 3
                         ? _next
@@ -394,6 +394,7 @@ class _Dots extends StatelessWidget {
     );
   }
 }
+
 
 
 
