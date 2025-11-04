@@ -49,62 +49,85 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
     };
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Love Language Quiz'),
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.goNamed('home'),
-        ),
-      ),
       body: CalmBackground(
         decorative: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Your partner’s primary love language is…",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant)),
-            const SizedBox(height: 8),
-            Text(primary, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            if (sorted.isNotEmpty)
-              _PrimaryCard(
-                label: sorted.first.key,
-                percent: sorted.first.value,
-                color: colors[sorted.first.key] ?? cs.primary,
-                description: desc[sorted.first.key] ?? '',
-              ),
-            const SizedBox(height: 16),
-            if (sorted.length > 1) ...[
-              Text('Other results (locked)', style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(height: 8),
-              for (final e in sorted.skip(1))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _BlurredRow(
-                    label: e.key,
-                    percent: e.value,
-                    color: colors[e.key] ?? cs.primary,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 120),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Center(
+                  child: Text(
+                    'Your Results Are In!',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
-            ],
-            const Spacer(),
-            FilledButton(
-              onPressed: () {
-                if (isPro) {
-                  context.goNamed('home');
-                } else {
-                  context.goNamed('paywall');
-                }
-              },
-              child: Text(isPro ? 'Continue' : 'See full results & weekly gestures'),
-            ),
-            const SizedBox(height: 8),
-            if (!isPro)
-              Text(
-                'Pricing and trials are examples for now.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                const SizedBox(height: 24),
+                Text('Primary Love Language',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: cs.onSurfaceVariant)),
+                const SizedBox(height: 12),
+                if (sorted.isNotEmpty)
+                  _PrimaryCard(
+                    label: sorted.first.key,
+                    percent: sorted.first.value,
+                    color: colors[sorted.first.key] ?? cs.primary,
+                    description: desc[sorted.first.key] ?? '',
+                  ),
+                const SizedBox(height: 28),
+                if (sorted.length > 1) ...[
+                  Center(
+                    child: Text(
+                      'Unlock Your Full Profile & Deeper Insights',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Center(
+                    child: Text(
+                      'See how your other love languages stack up\nfor a more complete picture of you.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  for (final e in sorted.skip(1))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _BlurredRow(
+                        label: e.key,
+                        percent: e.value,
+                        color: colors[e.key] ?? cs.primary,
+                      ),
+                    ),
+                ],
+              ]
               ),
-          ],
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              shape: const StadiumBorder(),
+              minimumSize: const Size.fromHeight(52),
+              backgroundColor: const Color(0xFF695AD3),
+              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+            ),
+            onPressed: () {
+              if (isPro) {
+                context.goNamed('home');
+              } else {
+                context.goNamed('paywall');
+              }
+            },
+            child: const Text('Reveal the results'),
+          ),
         ),
       ),
     );
@@ -120,25 +143,69 @@ class _PrimaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final screenW = MediaQuery.of(context).size.width;
+    final size = screenW - 64; // leave horizontal padding
+    // another ~10% smaller
+    final double ringSize = ((size * 0.40).clamp(150.0, 240.0)).toDouble();
+    final double stroke = ((ringSize * 0.10).clamp(16.0, 26.0)).toDouble();
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.white,
         border: Border.all(color: color),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-            child: Text('$percent%', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white)),
-          )
-        ]),
-        const SizedBox(height: 8),
-        Text(description, style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.35)),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: ringSize,
+            height: ringSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: ringSize,
+                  height: ringSize,
+                  child: CircularProgressIndicator(
+                    value: 1.0,
+                    strokeWidth: stroke,
+                    valueColor: AlwaysStoppedAnimation(color.withOpacity(0.18)),
+                    backgroundColor: Colors.transparent,
+                  ),
+                ),
+                SizedBox(
+                  width: ringSize,
+                  height: ringSize,
+                  child: CircularProgressIndicator(
+                    value: (percent.clamp(0, 100)) / 100.0,
+                    strokeWidth: stroke,
+                    valueColor: AlwaysStoppedAnimation(color),
+                    backgroundColor: Colors.transparent,
+                  ),
+                ),
+                Text(
+                  '$percent%',
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.35, color: cs.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -151,37 +218,47 @@ class _BlurredRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Opacity(
-          opacity: 0.35,
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-              border: Border.all(color: color.withOpacity(0.6)),
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withOpacity(0.6),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(color: cs.onSurface.withOpacity(0.4)),
             ),
-            child: Row(children: [
-              Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: color.withOpacity(0.6), borderRadius: BorderRadius.circular(12)),
-                child: Text('$percent%', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white)),
-              )
-            ]),
           ),
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.lock_outline),
-            SizedBox(width: 6),
-            Text('Subscribe to see'),
-          ],
-        )
-      ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.lock_outline),
+                SizedBox(width: 6),
+                Text('Unlock to see'),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+
+
+
