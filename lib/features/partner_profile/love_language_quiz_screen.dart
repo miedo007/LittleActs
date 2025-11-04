@@ -65,13 +65,30 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
   Widget build(BuildContext context) {
     final total = _questions.length.toDouble();
     return Scaffold(
-      appBar: AppBar(title: const Text('Love Language Quiz')),
       body: CalmBackground(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            LinearProgressIndicator(value: (index.clamp(0, _questions.length)) / total),
-            const SizedBox(height: 16),
+            Builder(builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return LinearProgressIndicator(
+                value: (index.clamp(0, _questions.length)) / total,
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF695AD3)),
+                backgroundColor: cs.outlineVariant.withOpacity(0.3),
+              );
+            }),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Question ${(index + 1).clamp(1, _questions.length)} of ${_questions.length}',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(height: 12),
             if (!_finalizing)
               _QuestionCard(
                 number: (index + 1).clamp(1, _questions.length),
@@ -146,56 +163,58 @@ class _QuestionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Question $number of $total', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.onSurfaceVariant)),
-          const SizedBox(height: 8),
-          Text(q.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-          const SizedBox(height: 16),
-          _ChoiceTile(label: 'A', text: q.a, onTap: onA),
-          const SizedBox(height: 12),
-          _ChoiceTile(label: 'B', text: q.b, onTap: onB),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                q.title,
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 20),
+              _ChoiceTile(text: q.a, onTap: onA),
+              const SizedBox(height: 14),
+              _ChoiceTile(text: q.b, onTap: onB),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class _ChoiceTile extends StatelessWidget {
-  final String label;
   final String text;
   final VoidCallback onTap;
-  const _ChoiceTile({required this.label, required this.text, required this.onTap});
+  const _ChoiceTile({required this.text, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(22),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           color: Colors.white,
           border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: cs.primary,
-                borderRadius: BorderRadius.circular(8),
+            const SizedBox(width: 2),
+            Expanded(
+              child: Text(
+                text,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
-              alignment: Alignment.center,
-              child: Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.onPrimary)),
             ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(text, style: Theme.of(context).textTheme.titleMedium)),
           ],
         ),
       ),
