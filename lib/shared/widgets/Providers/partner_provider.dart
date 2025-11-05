@@ -19,6 +19,33 @@ class PartnerNotifier extends StateNotifier<Partner?> {
     final raw = prefs.getString('partner');
     if (raw != null) {
       state = await compute(_decodePartner, raw);
+      // After loading an existing partner, ensure default yearly milestones exist
+      final p = state;
+      if (p != null) {
+        final ms = ref.read(milestonesProvider);
+        // Birthday
+        if (p.birthday != null && !ms.any((m) => m.id == 'birthday')) {
+          await ref.read(milestonesProvider.notifier).add(
+                Milestone(
+                  id: 'birthday',
+                  name: "Partner's Birthday",
+                  date: p.birthday!,
+                  repeatYearly: true,
+                ),
+              );
+        }
+        // Relationship Anniversary
+        if (p.togetherSince != null && !ms.any((m) => m.id == 'anniversary')) {
+          await ref.read(milestonesProvider.notifier).add(
+                Milestone(
+                  id: 'anniversary',
+                  name: "Relationship Anniversary",
+                  date: p.togetherSince!,
+                  repeatYearly: true,
+                ),
+              );
+        }
+      }
     }
   }
 
@@ -57,6 +84,22 @@ class PartnerNotifier extends StateNotifier<Partner?> {
                 id: 'birthday',
                 name: "Partner's Birthday",
                 date: merged.birthday!,
+                repeatYearly: true,
+              ),
+            );
+      }
+    }
+
+    // Ensure relationship anniversary milestone exists once togetherSince is known
+    if (merged.togetherSince != null) {
+      final ms = ref.read(milestonesProvider);
+      final exists = ms.any((m) => m.id == 'anniversary');
+      if (!exists) {
+        await ref.read(milestonesProvider.notifier).add(
+              Milestone(
+                id: 'anniversary',
+                name: "Relationship Anniversary",
+                date: merged.togetherSince!,
                 repeatYearly: true,
               ),
             );

@@ -51,15 +51,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Inline settings button at top-right since AppBar is removed
-        Align(
-          alignment: Alignment.topRight,
-          child: IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.pushNamed('settings'),
-          ),
-        ),
+        // Settings button removed; use Account tab instead
         _actCard(context, ref, current, title, cs),
         const SizedBox(height: 16),
         Text('Extra inspiration',

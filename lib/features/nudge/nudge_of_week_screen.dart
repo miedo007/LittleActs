@@ -26,16 +26,7 @@ class NudgeOfWeekScreen extends ConsumerWidget {
     final bool isReady = current.id.isNotEmpty && current.title.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("This Week's Nudge"),
-        actions: [
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.pushNamed('settings'),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text("This Week's Nudge")),
       body: CalmBackground(
         child: isReady
             ? Column(

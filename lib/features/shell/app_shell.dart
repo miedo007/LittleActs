@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../home/home_tab.dart';
 import '../partner/partner_summary_tab.dart';
 import '../love_bank/love_bank_tab.dart';
+import '../account/account_tab.dart';
 import '../../shared/widgets/calm_background.dart';
 
 class AppShell extends StatefulWidget {
@@ -17,11 +18,12 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final titles = ['Little Acts', 'Partner', 'Love Bank'];
+    final titles = ['Little Acts', 'Partner', 'Love Bank', 'Account'];
     final children = <Widget>[
       const HomeTab(),
       const PartnerSummaryTab(),
       const LoveBankTab(),
+      const AccountTab(),
     ];
     _built.add(_index);
     return Scaffold(
@@ -56,6 +58,7 @@ class _AppShellState extends State<AppShell> {
                 NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
                 NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Partner'),
                 NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'Love Bank'),
+                NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Account'),
               ],
             ),
           ),
