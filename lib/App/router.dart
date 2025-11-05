@@ -10,6 +10,7 @@ import '../features/gifts/gift_suggestions_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/paywall/paywall_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/partner_profile/profile_insights_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/onboarding',
@@ -64,6 +65,11 @@ final GoRouter appRouter = GoRouter(
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/profile-insights',
+      name: 'profileInsights',
+      builder: (context, state) => const ProfileInsightsScreen(),
     ),
   ],
 );

@@ -12,6 +12,16 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _controller = PageController();
   int _index = 0;
+  @override
+  void initState() {
+    super.initState();
+    // Precache images to avoid decode jank during first paint/animation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      precacheImage(const AssetImage('assets/branch.png'), context);
+      precacheImage(const AssetImage('assets/logo.png'), context);
+    });
+  }
 
   void _next() {
     if (_index < 3) {
@@ -300,20 +310,29 @@ class _FloatingBranchState extends State<_FloatingBranch>
   }
   @override
   Widget build(BuildContext context) {
+    final devicePx = MediaQuery.of(context).devicePixelRatio;
     return AnimatedBuilder(
       animation: _c,
-      builder: (_, __) {
+      child: Image.asset(
+        widget.asset,
+        width: widget.width,
+        fit: BoxFit.contain,
+        // Downsample to the on-screen size to reduce decode/raster cost
+        cacheWidth: (widget.width * devicePx).round(),
+        filterQuality: FilterQuality.low,
+      ),
+      builder: (_, child) {
         final t = _c.value * 2 * 3.1415926; // 0..2pi
         final dy = math.sin(t) * 3; // gentle float
         final scale = 1 + math.cos(t) * 0.007;
         final angle = math.sin(t) * 0.009; // ~1.7 degrees
         return Transform.translate(
-          offset: Offset(-1 + math.cos(t)*2, dy),
+          offset: Offset(-1 + math.cos(t) * 2, dy),
           child: Transform.rotate(
             angle: angle,
             child: Transform.scale(
               scale: scale,
-              child: Image.asset(widget.asset, width: widget.width, fit: BoxFit.contain),
+              child: child,
             ),
           ),
         );

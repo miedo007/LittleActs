@@ -94,7 +94,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                                         Text('Gender (optional)', style: Theme.of(context).textTheme.titleMedium),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<String>(
-                                          value: _gender,
+                                          initialValue: _gender,
                                           items: const [
                                             DropdownMenuItem(value: 'Woman', child: Text('Woman')),
                                             DropdownMenuItem(value: 'Man', child: Text('Man')),

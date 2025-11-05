@@ -70,3 +70,39 @@ class Partner {
         receivingGifts: json['receivingGifts'],
       );
 }
+
+extension PartnerCopyExt on Partner {
+  Partner copyWith({
+    String? name,
+    DateTime? birthday,
+    DateTime? togetherSince,
+    String? gender,
+    String? loveLanguagePrimary,
+    String? loveLanguageSecondary,
+    String? favorites,
+    String? dislikes,
+    String? budget,
+    int? qualityTime,
+    int? wordsOfAffirmation,
+    int? actsOfService,
+    int? physicalTouch,
+    int? receivingGifts,
+  }) {
+    return Partner(
+      name: name ?? this.name,
+      birthday: birthday ?? this.birthday,
+      togetherSince: togetherSince ?? this.togetherSince,
+      gender: gender ?? this.gender,
+      loveLanguagePrimary: loveLanguagePrimary ?? this.loveLanguagePrimary,
+      loveLanguageSecondary: loveLanguageSecondary ?? this.loveLanguageSecondary,
+      favorites: favorites ?? this.favorites,
+      dislikes: dislikes ?? this.dislikes,
+      budget: budget ?? this.budget,
+      qualityTime: qualityTime ?? this.qualityTime,
+      wordsOfAffirmation: wordsOfAffirmation ?? this.wordsOfAffirmation,
+      actsOfService: actsOfService ?? this.actsOfService,
+      physicalTouch: physicalTouch ?? this.physicalTouch,
+      receivingGifts: receivingGifts ?? this.receivingGifts,
+    );
+  }
+}

@@ -21,8 +21,9 @@ dependencies:
   intl: ^0.19.0
   package_info_plus: ^8.0.2
   shared_preferences: ^2.5.3
-  flutter_local_notifications: ^19.5.0
-  timezone: ^0.10.1
+  # Temporarily disable heavy notification stack during perf work
+  # flutter_local_notifications: ^19.5.0
+  # timezone: ^0.10.1
   google_fonts: ^6.2.1
   animations: ^2.0.11
 

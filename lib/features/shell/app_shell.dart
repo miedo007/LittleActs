@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:nudge/features/home/home_tab.dart';
-import 'package:nudge/features/partner/partner_summary_tab.dart';
-import 'package:nudge/features/love_bank/love_bank_tab.dart';
-import 'package:nudge/shared/widgets/calm_background.dart';
+import '../home/home_tab.dart';
+import '../partner/partner_summary_tab.dart';
+import '../love_bank/love_bank_tab.dart';
+import '../../shared/widgets/calm_background.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -14,25 +13,27 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+  final Set<int> _built = {0};
 
   @override
   Widget build(BuildContext context) {
     final titles = ['Little Acts', 'Partner', 'Love Bank'];
+    final children = <Widget>[
+      const HomeTab(),
+      const PartnerSummaryTab(),
+      const LoveBankTab(),
+    ];
+    _built.add(_index);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titles[_index]),
-        actions: [
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.pushNamed('settings'),
-          ),
-        ],
-      ),
       body: CalmBackground(
-        child: IndexedStack(
-          index: _index,
-          children: const [HomeTab(), PartnerSummaryTab(), LoveBankTab()],
+        child: Stack(
+          children: [
+            for (int i = 0; i < children.length; i++)
+              Offstage(
+                offstage: _index != i,
+                child: TickerMode(enabled: _index == i, child: _built.contains(i) ? children[i] : const SizedBox.shrink()),
+              ),
+          ],
         ),
       ),
       bottomNavigationBar: NavigationBar(

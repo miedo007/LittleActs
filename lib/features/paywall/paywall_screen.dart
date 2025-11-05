@@ -123,7 +123,7 @@ class PaywallScreen extends ConsumerWidget {
                                       value: ref.watch(_trialEnabledProvider),
                                       onChanged: (v) => ref.read(_trialEnabledProvider.notifier).state = v,
                                       activeTrackColor: const Color(0xFF53D476),
-                                      activeColor: Colors.white, // white thumb when ON
+                                      activeThumbColor: Colors.white, // white thumb when ON
                                     ),
                                   ),
                                 ],
@@ -169,7 +169,8 @@ class PaywallScreen extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Free trial started')),
                         );
-                        context.pop();
+                        // Navigate to home after starting the trial
+                        context.goNamed('home');
                       },
                 child: Text(isPro ? 'Premium active' : 'Try 3 days free'),
               ),

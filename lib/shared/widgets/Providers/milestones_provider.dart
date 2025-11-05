@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nudge/models/milestone.dart';
@@ -20,9 +21,7 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
     if (raw != null) {
-      final list = (jsonDecode(raw) as List)
-          .map((e) => Milestone.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final list = await compute(_decodeMilestones, raw);
       state = list;
       await _reschedule(); // ensure notifications match saved data
     }
@@ -30,10 +29,8 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _key,
-      jsonEncode(state.map((m) => m.toJson()).toList()),
-    );
+    final json = jsonEncode(state.map((m) => m.toJson()).toList());
+    await prefs.setString(_key, json);
   }
 
   // ---------- CRUD ----------
@@ -73,4 +70,12 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
       daysBefore: 7,
     );
   }
+}
+
+// Top-level for compute: parse milestones off the UI isolate
+List<Milestone> _decodeMilestones(String raw) {
+  final list = (jsonDecode(raw) as List)
+      .map((e) => Milestone.fromJson(e as Map<String, dynamic>))
+      .toList();
+  return list;
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,19 +32,15 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
     if (raw != null) {
-      final list = (jsonDecode(raw) as List)
-          .map((e) => WeeklyGesture.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final list = await compute(_decodeWeeklyGestures, raw);
       state = list;
     }
   }
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _key,
-      jsonEncode(state.map((e) => e.toJson()).toList()),
-    );
+    final json = jsonEncode(state.map((e) => e.toJson()).toList());
+    await prefs.setString(_key, json);
   }
 
   // ---------- Helpers ----------
@@ -250,7 +247,7 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
   WeeklyGesture? findBonusForCurrentWeek() {
     final ws = _startOfWeek(DateTime.now());
     final baseId = _weekId(ws);
-    final bonusId = '${baseId}-bonus';
+    final bonusId = '$baseId-bonus';
     return state.firstWhere(
       (g) => g.id == bonusId,
       orElse: () => WeeklyGesture(id: '', title: '', category: '', weekStart: ws),
@@ -263,7 +260,7 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
   Future<void> ensureBonusForCurrentWeek() async {
     final ws = _startOfWeek(DateTime.now());
     final baseId = _weekId(ws);
-    final bonusId = '${baseId}-bonus';
+    final bonusId = '$baseId-bonus';
     if (state.any((g) => g.id == bonusId)) return;
 
     final main = currentWeek();
@@ -291,17 +288,26 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
 
   // ---------- Streak ----------
   int streak() {
-    if (state.isEmpty) return 0;
-    final sorted = [...state]..sort((a, b) => a.weekStart.compareTo(b.weekStart));
+    // Count consecutive completed weeks ending at the current week.
+    final nowWs = _startOfWeek(DateTime.now());
+    final completedWeeks = {
+      for (final g in state)
+        if (g.completed) _startOfWeek(g.weekStart)
+    };
     int s = 0;
-    for (int i = sorted.length - 1; i >= 0; i--) {
-      final g = sorted[i];
-      if (g.completed) {
-        s++;
-      } else {
-        break;
-      }
+    var cursor = nowWs;
+    while (completedWeeks.contains(cursor)) {
+      s += 1;
+      cursor = cursor.subtract(const Duration(days: 7));
     }
     return s;
   }
+}
+
+// Top-level for compute: parse large JSON off the UI isolate
+List<WeeklyGesture> _decodeWeeklyGestures(String raw) {
+  final list = (jsonDecode(raw) as List)
+      .map((e) => WeeklyGesture.fromJson(e as Map<String, dynamic>))
+      .toList();
+  return list;
 }
