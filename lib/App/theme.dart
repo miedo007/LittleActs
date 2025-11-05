@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animations/animations.dart';
 
-// Calm-inspired, modern Material 3 theme (deeper blue)
-final Color _seed = const Color(0xFF1B3B6F);
+// Calm-inspired, modern Material 3 theme (purple primary)
+final Color _seed = const Color(0xFF695AD3);
 
 final ThemeData appTheme = _buildLightTheme();
 final ThemeData darkAppTheme = _buildDarkTheme();

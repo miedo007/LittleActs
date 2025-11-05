@@ -74,7 +74,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       icon: Icons.auto_graph_rounded,
                       titleWeight: FontWeight.w900,
                       highlightSubphrase: 'change everything',
-                      highlightColor: Color(0xFF3666D1),
+                      highlightColor: Theme.of(context).colorScheme.primary,
                     ),
                   ],
                 ),

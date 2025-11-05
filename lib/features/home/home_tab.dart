@@ -157,7 +157,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             if (g.category.isNotEmpty)
               _categoryTag(context, g.category),
             Text(
-              _descFor(g),
+              (g.description != null && g.description!.isNotEmpty) ? g.description! : _descFor(g),
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -196,7 +196,10 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         Text(bonus.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        Text("Feeling extra thoughtful? Here's a bonus idea to go beyond the basics.",
+        Text(
+            (bonus.description != null && bonus.description!.isNotEmpty)
+                ? bonus.description!
+                : "Feeling extra thoughtful? Here's a bonus idea to go beyond the basics.",
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
         const SizedBox(height: 8),
         Row(children: [

@@ -25,6 +25,9 @@ class LoveBankTab extends ConsumerWidget {
       );
     }
 
+    final totalActs = completed.length;
+    final longest = notifier.longestStreak();
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -34,6 +37,12 @@ class LoveBankTab extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
         const SizedBox(height: 8),
         Row(children: [const Spacer(), _streakChip(context, s)]),
+        const SizedBox(height: 12),
+        Row(children: [
+          _metricCard(context, 'Total Acts', totalActs.toString()),
+          const SizedBox(width: 12),
+          _metricCard(context, 'Longest Streak', '$longest'),
+        ]),
         const SizedBox(height: 16),
         RepaintBoundary(
           child: _Heatmap52(
@@ -124,24 +133,112 @@ class _Heatmap52 extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
     const weeks = 52;
-    final Map<DateTime, int> count = {};
+
+    DateTime startOfWeek(DateTime d) {
+      final base = DateTime(d.year, d.month, d.day);
+      final weekday = base.weekday % 7; // Sunday => 0
+      final start = base.subtract(Duration(days: weekday));
+      return DateTime(start.year, start.month, start.day);
+    }
+
+    // Count completions per week start
+    final Map<DateTime, int> weekCount = {};
     for (final d in dates) {
-      final key = DateTime(d.year, d.month, d.day);
-      count[key] = (count[key] ?? 0) + 1;
+      final ws = startOfWeek(d);
+      weekCount[ws] = (weekCount[ws] ?? 0) + 1;
     }
-    final cols = <Widget>[];
-    for (int w = weeks - 1; w >= 0; w--) {
-      final weekStart = DateTime(now.year, now.month, now.day).subtract(Duration(days: (now.weekday % 7) + w * 7));
-      final cells = <Widget>[];
-      for (int i = 0; i < 7; i++) {
-        final day = DateTime(weekStart.year, weekStart.month, weekStart.day).add(Duration(days: i));
-        final c = (count[day] ?? 0).clamp(0, 4);
-        final color = c == 0 ? cs.outlineVariant.withOpacity(0.25) : cs.primary.withOpacity(0.20 + 0.15 * c);
-        cells.add(Container(width: 10, height: 10, margin: const EdgeInsets.all(2), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))));
+
+    // Helper: Sundays inside the given month
+    List<DateTime> weeksInMonth(int year, int month) {
+      final first = DateTime(year, month, 1);
+      final last = DateTime(year, month + 1, 0);
+      DateTime cur = first;
+      while (cur.weekday % 7 != 0) {
+        cur = cur.add(const Duration(days: 1));
       }
-      cols.add(Column(children: cells));
+      final list = <DateTime>[];
+      while (!cur.isAfter(last)) {
+        list.add(cur);
+        cur = cur.add(const Duration(days: 7));
+      }
+      return list;
     }
-    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: cols));
+
+    return LayoutBuilder(builder: (context, constraints) {
+      const monthsPerRow = 3;
+      const monthGap = 12.0;
+      const dotSize = 14.0;
+      const dotGap = 6.0;
+      final width = constraints.maxWidth;
+      final monthWidth = ((width - (monthsPerRow - 1) * monthGap) / monthsPerRow).clamp(120.0, 9999.0);
+
+      Widget buildMonth(int year, int month) {
+        final weeks = weeksInMonth(year, month);
+        return SizedBox(
+          width: monthWidth,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              ['January','February','March','April','May','June','July','August','September','October','November','December'][month - 1],
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 6),
+            Row(children: [
+              for (int i = 0; i < weeks.length; i++) ...[
+                Container(
+                  width: dotSize,
+                  height: dotSize,
+                  decoration: BoxDecoration(
+                    color: (weekCount[weeks[i]] ?? 0) > 0 ? cs.primary : cs.outlineVariant.withOpacity(0.35),
+                    borderRadius: BorderRadius.circular(dotSize / 2),
+                  ),
+                ),
+                if (i != weeks.length - 1) const SizedBox(width: dotGap),
+              ]
+            ])
+          ]),
+        );
+      }
+
+      final year = now.year;
+      final months = <Widget>[for (int m = 1; m <= 12; m++) buildMonth(year, m)];
+
+      // Legend
+      Widget legendBox(Color color) => Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)));
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: monthGap,
+            runSpacing: 12,
+            children: months,
+          ),
+          const SizedBox(height: 12),
+          Row(children: [
+            legendBox(cs.outlineVariant.withOpacity(0.35)),
+            const SizedBox(width: 6),
+            Text('Incomplete', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+            const SizedBox(width: 16),
+            legendBox(cs.primary),
+            const SizedBox(width: 6),
+            Text('Completed', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+          ])
+        ],
+      );
+    });
   }
 }
 
+Widget _metricCard(BuildContext context, String label, String value) {
+  return Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(height: 6),
+        Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+      ]),
+    ),
+  );
+}

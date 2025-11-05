@@ -48,7 +48,9 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                         current.title,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      subtitle: Text(
+                      subtitle: (current.description != null && current.description!.isNotEmpty)
+                          ? Text(current.description!)
+                          : Text(
                         'Category: ${current.category} • Week of '
                         '${current.weekStart.toLocal().year}-'
                         '${current.weekStart.toLocal().month.toString().padLeft(2, '0')}-'

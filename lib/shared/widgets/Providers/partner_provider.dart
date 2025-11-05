@@ -23,12 +23,32 @@ class PartnerNotifier extends StateNotifier<Partner?> {
   }
 
   Future<void> savePartner(Partner partner) async {
+    // Merge with existing so partial updates (e.g., from different flows)
+    // don’t wipe previously entered fields like togetherSince/birthday.
+    final existing = state;
+    final merged = Partner(
+      name: partner.name.isNotEmpty ? partner.name : (existing?.name ?? ''),
+      birthday: partner.birthday ?? existing?.birthday,
+      togetherSince: partner.togetherSince ?? existing?.togetherSince,
+      gender: partner.gender ?? existing?.gender,
+      loveLanguagePrimary: partner.loveLanguagePrimary ?? existing?.loveLanguagePrimary,
+      loveLanguageSecondary: partner.loveLanguageSecondary ?? existing?.loveLanguageSecondary,
+      favorites: partner.favorites ?? existing?.favorites,
+      dislikes: partner.dislikes ?? existing?.dislikes,
+      budget: partner.budget ?? existing?.budget,
+      qualityTime: partner.qualityTime ?? existing?.qualityTime,
+      wordsOfAffirmation: partner.wordsOfAffirmation ?? existing?.wordsOfAffirmation,
+      actsOfService: partner.actsOfService ?? existing?.actsOfService,
+      physicalTouch: partner.physicalTouch ?? existing?.physicalTouch,
+      receivingGifts: partner.receivingGifts ?? existing?.receivingGifts,
+    );
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('partner', jsonEncode(partner.toJson()));
-    state = partner;
+    await prefs.setString('partner', jsonEncode(merged.toJson()));
+    state = merged;
 
     // Ensure birthday milestone exists once a birthday is known
-    if (partner.birthday != null) {
+    if (merged.birthday != null) {
       final ms = ref.read(milestonesProvider);
       final exists = ms.any((m) => m.id == 'birthday');
       if (!exists) {
@@ -36,7 +56,7 @@ class PartnerNotifier extends StateNotifier<Partner?> {
               Milestone(
                 id: 'birthday',
                 name: "Partner's Birthday",
-                date: partner.birthday!,
+                date: merged.birthday!,
                 repeatYearly: true,
               ),
             );

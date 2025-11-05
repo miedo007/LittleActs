@@ -5,6 +5,7 @@ class WeeklyGesture {
   final DateTime weekStart;     // start of the week (Sun at 00:00)
   final bool completed;
   final DateTime? completedAt;
+  final String? description;    // optional longer hint/description
 
   WeeklyGesture({
     required this.id,
@@ -13,6 +14,7 @@ class WeeklyGesture {
     required this.weekStart,
     this.completed = false,
     this.completedAt,
+    this.description,
   });
 
   WeeklyGesture copyWith({
@@ -22,6 +24,7 @@ class WeeklyGesture {
     DateTime? weekStart,
     bool? completed,
     DateTime? completedAt,
+    String? description,
   }) {
     return WeeklyGesture(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class WeeklyGesture {
       weekStart: weekStart ?? this.weekStart,
       completed: completed ?? this.completed,
       completedAt: completedAt ?? this.completedAt,
+      description: description ?? this.description,
     );
   }
 
@@ -40,6 +44,7 @@ class WeeklyGesture {
         'weekStart': weekStart.toIso8601String(),
         'completed': completed,
         'completedAt': completedAt?.toIso8601String(),
+        'description': description,
       };
 
   factory WeeklyGesture.fromJson(Map<String, dynamic> json) => WeeklyGesture(
@@ -51,5 +56,6 @@ class WeeklyGesture {
         completedAt: (json['completedAt'] as String?) != null
             ? DateTime.parse(json['completedAt'] as String)
             : null,
+        description: json['description'] as String?,
       );
 }

@@ -61,86 +61,81 @@ class PartnerSummaryTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Partner', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        // Frame 1: Partner name + together since
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(partner.name ?? 'Partner',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '${_possessive(partner.name)} profile',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 6),
                 if (partner.togetherSince != null)
                   Text(
                     _togetherFor(partner.togetherSince!),
+                    textAlign: TextAlign.center,
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
                         ?.copyWith(color: Theme.of(context).colorScheme.primary),
                   )
                 else
-                  TextButton(
-                    onPressed: () async {
-                      final now = DateTime.now();
-                      final picked = await _pickDateCupertino(
-                        context,
-                        DateTime(now.year, now.month, now.day),
-                        DateTime(now.year - 20, 1, 1),
-                        now,
-                      );
-                      if (picked != null) {
-                        final notifier = ref.read(partnerProvider.notifier);
-                        await notifier.savePartner(partner.copyWith(togetherSince: picked));
-                      }
-                    },
-                    child: const Text('Set Together Since'),
-                  ),
-                if (partner.birthday == null)
-                  TextButton(
-                    onPressed: () async {
-                      final now = DateTime.now();
-                      final picked = await _pickDateCupertino(
-                        context,
-                        DateTime(now.year, now.month, now.day),
-                        DateTime(now.year - 80, 1, 1),
-                        now,
-                      );
-                      if (picked != null) {
-                        final notifier = ref.read(partnerProvider.notifier);
-                        await notifier.savePartner(partner.copyWith(birthday: picked));
-                      }
-                    },
-                    child: const Text('Set birthday'),
+                  Center(
+                    child: TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
+                      onPressed: () async {
+                        final now = DateTime.now();
+                        final picked = await _pickDateCupertino(
+                          context,
+                          DateTime(now.year, now.month, now.day),
+                          DateTime(now.year - 20, 1, 1),
+                          now,
+                        );
+                        if (picked != null) {
+                          final notifier = ref.read(partnerProvider.notifier);
+                          await notifier.savePartner(partner.copyWith(togetherSince: picked));
+                        }
+                      },
+                      child: const Text('Set together since'),
+                    ),
                   ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Love Language', style: Theme.of(context).textTheme.titleSmall),
-            TextButton(
-              onPressed: () => context.pushNamed('profileInsights'),
-              child: const Text('View full profile'),
-            )
-          ],
-        ),
-        const SizedBox(height: 8),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: RepaintBoundary(
-              child: _LoveDonut(
-                pct: pct.map((k, v) => MapEntry(k, v.toDouble())),
-                colorFor: colorFor,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Love Language',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
+                      onPressed: () => context.pushNamed('profileInsights'),
+                      child: const Text('View full profile'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                RepaintBoundary(
+                  child: _LoveDonut(
+                    pct: pct.map((k, v) => MapEntry(k, v.toDouble())),
+                    colorFor: colorFor,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -150,6 +145,7 @@ class PartnerSummaryTab extends ConsumerWidget {
           children: [
             Text('Milestones', style: Theme.of(context).textTheme.titleSmall),
             TextButton.icon(
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
               onPressed: () => context.pushNamed('milestonePlanner'),
               icon: const Icon(Icons.add_circle_outline),
               label: const Text('Add milestone'),
@@ -338,6 +334,13 @@ String _togetherFor(DateTime since) {
     years -= 1;
   }
   return 'Together for $years years, $months months, $days days';
+}
+ 
+String _possessive(String name) {
+  final n = (name.trim().isEmpty) ? 'Partner' : name.trim();
+  // Basic possessive helper: James' vs Zineb's
+  if (n.endsWith('s') || n.endsWith('S')) return "$n'";
+  return "$n's";
 }
 
 Future<DateTime?> _pickDateCupertino(
