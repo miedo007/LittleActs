@@ -133,7 +133,14 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
   WeeklyGesturesNotifier(this._ref) : super(const []) {
     _load().then((_) async {
       await _ensureThisWeekGesture();
-      await NotificationService().scheduleWeeklyNudge();
+      final partner = _ref.read(partnerProvider);
+      await NotificationService().scheduleWeeklyNudge(partnerName: (partner?.name.isNotEmpty ?? false) ? partner!.name : 'your partner');
+      // Also schedule completion reminder 3 days after the drop (upcoming Sunday)
+      final now = DateTime.now();
+      final weekday = now.weekday % 7; // Sunday=0
+      final daysUntilSunday = (7 - weekday) % 7;
+      final drop = DateTime(now.year, now.month, now.day).add(Duration(days: daysUntilSunday)).add(const Duration(hours: 9));
+      await NotificationService().scheduleActCompletionReminder(drop);
     });
   }
 

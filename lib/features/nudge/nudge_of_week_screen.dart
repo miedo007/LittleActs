@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -104,11 +105,12 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () => NotificationService().showNowTest('Test notification', 'It works!'),
-                    icon: const Icon(Icons.notifications_active_outlined),
-                    label: const Text('Send test notification'),
-                  ),
+                  if (!kReleaseMode)
+                    TextButton.icon(
+                      onPressed: () => NotificationService().showNowTest('Test notification', 'It works!'),
+                      icon: const Icon(Icons.notifications_active_outlined),
+                      label: const Text('Send test notification'),
+                    ),
                   const Spacer(),
                   Center(
                     child: isPro

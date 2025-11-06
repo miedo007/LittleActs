@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
+import 'package:nudge/shared/Services/notification_service.dart';
 
 class AccountTab extends ConsumerStatefulWidget {
   const AccountTab({super.key});
@@ -94,6 +96,30 @@ class _AccountTabState extends ConsumerState<AccountTab> {
                       await premium.upgrade();
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upgraded to Premium')));
+                      // Prompt for notifications permission/enable
+                      final enable = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Stay effortlessly thoughtful'),
+                          content: const Text(
+                              'Get gentle reminders for your weekly acts and upcoming milestones so you never miss another moment.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Maybe Later')),
+                            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Enable Notifications')),
+                          ],
+                        ),
+                      );
+                      if (enable == true) {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('notifications_enabled', true);
+                        // Best-effort init + (re)schedule
+                        await NotificationService().init();
+                        final partner = ref.read(partnerProvider);
+                        await NotificationService().scheduleWeeklyNudge(
+                          partnerName: (partner?.name.isNotEmpty ?? false) ? partner!.name : 'your partner',
+                        );
+                        // Milestones are scheduled by provider; we could trigger a reschedule by toggling any save if needed.
+                      }
                     },
                     child: const Text('Upgrade'),
                   ),
@@ -174,6 +200,15 @@ class _AccountTabState extends ConsumerState<AccountTab> {
           ),
         ),
       ],
+        const SizedBox(height: 8),
+        if (!kReleaseMode)
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.notifications_active_outlined),
+              title: const Text('Send test notification (debug)'),
+              onTap: () => NotificationService().showNowTest('Test notification', 'It works!'),
+            ),
+          ),
     );
   }
 }

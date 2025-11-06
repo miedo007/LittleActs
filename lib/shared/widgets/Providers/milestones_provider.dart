@@ -56,18 +56,26 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
   Future<void> _reschedule() async {
     // Build the list of next occurrences (handles yearly repeats)
     final now = DateTime.now();
-    final nextDates = state.map((m) {
-      if (!m.repeatYearly) return m.date;
-      final thisYear = DateTime(now.year, m.date.month, m.date.day);
-      return thisYear.isAfter(now)
-          ? thisYear
-          : DateTime(now.year + 1, m.date.month, m.date.day);
-    }).toList();
+    final nextDates = <DateTime>[];
+    final names = <String>[];
+    for (final m in state) {
+      final next = (!m.repeatYearly)
+          ? m.date
+          : (() {
+              final thisYear = DateTime(now.year, m.date.month, m.date.day);
+              return thisYear.isAfter(now)
+                  ? thisYear
+                  : DateTime(now.year + 1, m.date.month, m.date.day);
+            })();
+      nextDates.add(next);
+      names.add(m.name);
+    }
 
     // Schedule reminders 7 days before each milestone
     await NotificationService().scheduleMilestoneReminders(
       nextDates,
-      daysBefore: 7,
+      names: names,
+      daysBefore: 3,
     );
   }
 }
