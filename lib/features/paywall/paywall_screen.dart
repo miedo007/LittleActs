@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/Services/notification_service.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/widgets/glass_card.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 enum _Plan { weekly, yearly }
 
 final _planProvider = StateProvider<_Plan>((ref) => _Plan.weekly);
+final _purchasingProvider = StateProvider<bool>((ref) => false);
 final _trialEnabledProvider = StateProvider<bool>((ref) => true);
 
 class PaywallScreen extends ConsumerWidget {
@@ -16,11 +18,22 @@ class PaywallScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double weeklyPrice = 5.99;
-    const double yearlyPrice = 49.99;
-    final int yearlySavingsPct = 40;
+    final products = ref.watch(premiumProductsProvider);
     final isPro = ref.watch(premiumProvider);
+    final purchasing = ref.watch(_purchasingProvider);
     final cs = Theme.of(context).colorScheme;
+
+    ref.listen<bool>(premiumProvider, (prev, next) async {
+      if (prev != true && next == true) {
+        // Ask for notification permission only after the user subscribes
+        await NotificationService().requestPermissions();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Premium activated')),
+        );
+        Navigator.of(context).maybePop();
+      }
+    });
 
     return Scaffold(
       body: CalmBackground(
@@ -74,6 +87,28 @@ class PaywallScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Builder(builder: (_) {
                         final plan = ref.watch(_planProvider);
+                        final weekly = products.maybeWhen(
+                          data: (p) => p.weekly?.price,
+                          orElse: () => null,
+                        );
+                        final yearly = products.maybeWhen(
+                          data: (p) => p.yearly?.price,
+                          orElse: () => null,
+                        );
+                        final weeklyRaw = products.maybeWhen(
+                          data: (p) => p.weekly?.rawPrice,
+                          orElse: () => null,
+                        );
+                        final yearlyRaw = products.maybeWhen(
+                          data: (p) => p.yearly?.rawPrice,
+                          orElse: () => null,
+                        );
+                        String? yearlyNote;
+                        if (weeklyRaw != null && yearlyRaw != null && weeklyRaw > 0) {
+                          final annualAtWeekly = weeklyRaw * 52.0;
+                          final pct = ((1 - (yearlyRaw / annualAtWeekly)) * 100).round();
+                          if (pct > 0) yearlyNote = 'Save $pct%';
+                        }
                         return Column(
                           children: [
                             // Yearly on top
@@ -82,9 +117,9 @@ class PaywallScreen extends ConsumerWidget {
                               onTap: () => ref.read(_planProvider.notifier).state = _Plan.yearly,
                               child: _PlanTile(
                                 label: 'Yearly',
-                                price: r'$49.99/year',
+                                price: '${yearly ?? r'$49.99'}/year',
                                 highlight: true,
-                                note: 'Best value',
+                                note: yearlyNote ?? 'Best value',
                                 selected: plan == _Plan.yearly,
                               ),
                             ),
@@ -94,7 +129,7 @@ class PaywallScreen extends ConsumerWidget {
                               onTap: () => ref.read(_planProvider.notifier).state = _Plan.weekly,
                               child: _PlanTile(
                                 label: 'Weekly',
-                                price: r'$5.99/week',
+                                price: '${weekly ?? r'$5.99'}/week',
                                 highlight: false,
                                 selected: plan == _Plan.weekly,
                               ),
@@ -161,18 +196,60 @@ class PaywallScreen extends ConsumerWidget {
                   backgroundColor: const Color(0xFF695AD3),
                   textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                 ),
-                onPressed: isPro
+                onPressed: isPro || purchasing
                     ? null
                     : () async {
-                        await ref.read(premiumProvider.notifier).upgrade();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Free trial started')),
-                        );
-                        // Navigate to home after starting the trial
-                        context.goNamed('home');
+                        try {
+                          ref.read(_purchasingProvider.notifier).state = true;
+                          final plan = ref.read(_planProvider);
+                          if (plan == _Plan.weekly) {
+                            await ref.read(premiumProvider.notifier).buyWeekly();
+                          } else {
+                            await ref.read(premiumProvider.notifier).buyYearly();
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Purchase failed. Please try again.')),
+                            );
+                          }
+                        } finally {
+                          ref.read(_purchasingProvider.notifier).state = false;
+                        }
                       },
-                child: Text(isPro ? 'Premium active' : 'Try 3 days free'),
+                child: purchasing
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          ),
+                          SizedBox(width: 8),
+                          Text('Processing...'),
+                        ],
+                      )
+                    : Text(isPro ? 'Premium active' : 'Continue'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: purchasing
+                    ? null
+                    : () async {
+                        try {
+                          ref.read(_purchasingProvider.notifier).state = true;
+                          await ref.read(premiumProvider.notifier).restore();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Restore requested')),
+                            );
+                          }
+                        } finally {
+                          ref.read(_purchasingProvider.notifier).state = false;
+                        }
+                      },
+                child: const Text('Restore Purchases'),
               ),
               const SizedBox(height: 6),
               Row(

@@ -63,6 +63,7 @@ class _AccountTabState extends ConsumerState<AccountTab> {
     await ref.read(milestonesProvider.notifier).clear();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('weekly_gestures');
+    await prefs.remove('has_completed_setup');
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All local data deleted')));
   }
@@ -93,33 +94,8 @@ class _AccountTabState extends ConsumerState<AccountTab> {
                 ? null
                 : FilledButton(
                     onPressed: () async {
-                      await premium.upgrade();
                       if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upgraded to Premium')));
-                      // Prompt for notifications permission/enable
-                      final enable = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Stay effortlessly thoughtful'),
-                          content: const Text(
-                              'Get gentle reminders for your weekly acts and upcoming milestones so you never miss another moment.'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Maybe Later')),
-                            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Enable Notifications')),
-                          ],
-                        ),
-                      );
-                      if (enable == true) {
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setBool('notifications_enabled', true);
-                        // Best-effort init + (re)schedule
-                        await NotificationService().init();
-                        final partner = ref.read(partnerProvider);
-                        await NotificationService().scheduleWeeklyNudge(
-                          partnerName: (partner?.name.isNotEmpty ?? false) ? partner!.name : 'your partner',
-                        );
-                        // Milestones are scheduled by provider; we could trigger a reschedule by toggling any save if needed.
-                      }
+                      context.pushNamed('paywall');
                     },
                     child: const Text('Upgrade'),
                   ),
@@ -132,7 +108,7 @@ class _AccountTabState extends ConsumerState<AccountTab> {
         Card(
           child: ListTile(
             leading: const Icon(Icons.restore_rounded),
-            title: const Text('Restore Purchase'),
+            title: const Text('Restore Purchases'),
             onTap: () async {
               await premium.restore();
               if (!mounted) return;

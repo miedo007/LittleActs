@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../home/home_tab.dart';
 import '../partner/partner_summary_tab.dart';
 import '../love_bank/love_bank_tab.dart';
@@ -15,6 +16,17 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
   final Set<int> _built = {0};
+
+  @override
+  void initState() {
+    super.initState();
+    _markCompleted();
+  }
+
+  Future<void> _markCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_setup', true);
+  }
 
   @override
   Widget build(BuildContext context) {

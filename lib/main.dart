@@ -9,7 +9,7 @@ import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init();
+  // Defer notifications init to after first frame to avoid startup jank
   runApp(const ProviderScope(child: NudgeApp()));
 }
 
@@ -51,6 +51,8 @@ class _AppWarmupState extends ConsumerState<_AppWarmup> {
       ref.read(partnerProvider);
       ref.read(milestonesProvider);
       ref.read(weeklyGesturesProvider);
+      // Initialize notifications after first frame to reduce startup blocking
+      await NotificationService().init();
     });
   }
 

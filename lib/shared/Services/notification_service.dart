@@ -25,17 +25,22 @@ class NotificationService {
   );
 
   bool _initialized = false;
+  static bool _tzReady = false;
+
+  Future<void> _ensureTz() async {
+    if (_tzReady) return;
+    try {
+      tz.initializeTimeZones();
+    } catch (_) {
+      // ignore duplicate init across hot restarts
+    }
+    _tzReady = true;
+  }
 
   Future<void> init() async {
     if (_initialized) return;
 
-    // Timezone setup (best effort). If needed, we can add a native timezone
-    // plugin later to get the exact local name; tz.local works for most cases.
-    try {
-      tz.initializeTimeZones();
-    } catch (_) {
-      // Safe to ignore repeated initialization across hot restarts.
-    }
+    // Defer timezone init until first schedule call to reduce startup cost.
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOSInit = DarwinInitializationSettings();
@@ -53,21 +58,23 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>();
     if (androidImpl != null) {
       await androidImpl.createNotificationChannel(_defaultChannel);
-      // Android 13+ permission prompt
-      await androidImpl.requestNotificationsPermission();
     }
 
-    // iOS/macOS permissions
-    final darwinImpl = _plugin
+    _initialized = true;
+  }
+
+  // Request OS notification permissions explicitly when user opts in
+  Future<void> requestPermissions() async {
+    await init();
+    final androidImpl =
+        _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidImpl?.requestNotificationsPermission();
+
+    final iosImpl = _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
-    await darwinImpl?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    _initialized = true;
+    await iosImpl?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
   Future<void> cancelAll() async {
@@ -95,6 +102,7 @@ class NotificationService {
     int minute = 0,
   }) async {
     await init();
+    await _ensureTz();
     final id = _stableId('weekly_drop');
     final title = 'Your new Little Act';
     final body = 'One small thing to brighten $partnerName\'s day.';
@@ -118,7 +126,8 @@ class NotificationService {
       body,
       next,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      // Avoid exact alarms to prevent permission errors on Android 13+
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
@@ -131,6 +140,7 @@ class NotificationService {
     int minute = 0,
   }) async {
     await init();
+    await _ensureTz();
     final when = DateTime(dropDate.year, dropDate.month, dropDate.day, hour,
             minute)
         .add(Duration(days: daysAfter));
@@ -156,7 +166,7 @@ class NotificationService {
       body,
       tzWhen,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }
 
@@ -168,6 +178,7 @@ class NotificationService {
     int minute = 0,
   }) async {
     await init();
+    await _ensureTz();
     final now = DateTime.now();
     for (var i = 0; i < milestoneDates.length; i++) {
       final date = milestoneDates[i];
@@ -200,8 +211,12 @@ class NotificationService {
         body,
         tzAt,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
+      // Yield to event loop every 8 items to avoid jank on large lists
+      if ((i + 1) % 8 == 0) {
+        await Future<void>.delayed(Duration.zero);
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/launch/launch_decider.dart';
 import '../features/partner_profile/partner_profile_wizard.dart';
 import '../features/partner_profile/love_language_quiz_screen.dart';
 import '../features/partner_profile/quiz_results_teaser_screen.dart';
@@ -13,8 +14,13 @@ import '../features/settings/settings_screen.dart';
 import '../features/partner_profile/profile_insights_screen.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/onboarding',
+  initialLocation: '/launch',
   routes: [
+    GoRoute(
+      path: '/launch',
+      name: 'launch',
+      builder: (context, state) => const LaunchDeciderScreen(),
+    ),
     GoRoute(
       path: '/home',
       name: 'home',
