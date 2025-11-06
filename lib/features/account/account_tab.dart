@@ -199,7 +199,6 @@ class _AccountTabState extends ConsumerState<AccountTab> {
             onTap: _deleteAllData,
           ),
         ),
-      ],
         const SizedBox(height: 8),
         if (!kReleaseMode)
           Card(
@@ -209,6 +208,7 @@ class _AccountTabState extends ConsumerState<AccountTab> {
               onTap: () => NotificationService().showNowTest('Test notification', 'It works!'),
             ),
           ),
+      ],
     );
   }
 }
