@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:intl/intl.dart";
 import "package:nudge/models/weekly_gesture.dart";
+import "package:nudge/shared/style/palette.dart";
 import "package:nudge/shared/widgets/Providers/gesture_provider.dart";
 
 class LoveBankTab extends ConsumerWidget {
@@ -13,19 +14,16 @@ class LoveBankTab extends ConsumerWidget {
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final completed = notifier.completedActs();
     final cs = Theme.of(context).colorScheme;
-
-    if (completed.isEmpty) {
-      return Center(
-        child: Text(
-          "No completed acts yet. Mark this week's act as done to start your streak!",
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      );
-    }
-
     final totalActs = completed.length;
     final longest = notifier.longestStreak();
+    DateTime? earliestGesture;
+    if (gestures.isNotEmpty) {
+      earliestGesture = gestures
+          .map((g) => g.weekStart)
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+    }
+    final joinWeekStart = _startOfWeek(earliestGesture ?? DateTime.now());
+    final displayYear = DateTime.now().year;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -33,7 +31,7 @@ class LoveBankTab extends ConsumerWidget {
         Text(
           'Love Bank',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
         Text(
@@ -49,9 +47,9 @@ class LoveBankTab extends ConsumerWidget {
         ]),
         const SizedBox(height: 20),
         Text(
-          'Your Year In Review',
+          'Your $displayYear Year In Review',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 10),
         Center(
@@ -64,7 +62,8 @@ class LoveBankTab extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: RepaintBoundary(
               child: _Heatmap52(
-                dates: completed.map((e) => e.completedAt ?? e.weekStart).toList(),
+                gestures: gestures,
+                joinWeekStart: joinWeekStart,
               ),
             ),
           ),
@@ -73,27 +72,42 @@ class LoveBankTab extends ConsumerWidget {
         Text(
           'Last Thoughtful Moments',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
-        for (final g in completed.take(5))
+        if (completed.isEmpty)
           Card(
-            child: ListTile(
-              leading: Text(_emojiGlyph(g.category), style: const TextStyle(fontSize: 20)),
-              title: Text(
-                g.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                DateFormat.yMMMEd().format(g.completedAt ?? g.weekStart),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-              ),
-              trailing: Text(
-                g.category.toUpperCase(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: _loveColor(context, g.category)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              child: Text(
+                'Complete your first act to start building a highlight reel.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
               ),
             ),
-          ),
+          )
+        else
+          for (final g in completed.take(5))
+            Card(
+              child: ListTile(
+                leading: Text(_emojiGlyph(g.category), style: const TextStyle(fontSize: 20)),
+                title: Text(
+                  g.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  DateFormat.yMMMEd().format(g.completedAt ?? g.weekStart),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                ),
+                trailing: Text(
+                  g.category.toUpperCase(),
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(color: _loveColor(context, g.category)),
+                ),
+              ),
+            ),
       ],
     );
   }
@@ -120,27 +134,24 @@ class LoveBankTab extends ConsumerWidget {
 
 }
 
+enum _WeekStatus { past, completed, missed, upcoming }
+
 class _Heatmap52 extends StatelessWidget {
-  final List<DateTime> dates;
-  const _Heatmap52({required this.dates});
+  final List<WeeklyGesture> gestures;
+  final DateTime joinWeekStart;
+  const _Heatmap52({required this.gestures, required this.joinWeekStart});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
-    DateTime startOfWeek(DateTime d) {
-      final base = DateTime(d.year, d.month, d.day);
-      final weekday = base.weekday % 7; // Sunday => 0
-      final start = base.subtract(Duration(days: weekday));
-      return DateTime(start.year, start.month, start.day);
-    }
+    final currentWeek = _startOfWeek(now);
+    final joinWeek = _startOfWeek(joinWeekStart);
 
-    // Count completions per week start
-    final Map<DateTime, int> weekCount = {};
-    for (final d in dates) {
-      final ws = startOfWeek(d);
-      weekCount[ws] = (weekCount[ws] ?? 0) + 1;
-    }
+    final completedWeeks = <DateTime>{
+      for (final g in gestures.where((g) => g.completed))
+        _startOfWeek(g.completedAt ?? g.weekStart)
+    };
 
     // Helper: Sundays inside the given month
     List<DateTime> weeksInMonth(int year, int month) {
@@ -156,6 +167,26 @@ class _Heatmap52 extends StatelessWidget {
         cur = cur.add(const Duration(days: 7));
       }
       return list;
+    }
+
+    Color colorFor(_WeekStatus status) {
+      switch (status) {
+        case _WeekStatus.completed:
+          return const Color(0xFF4CAF6E);
+        case _WeekStatus.missed:
+          return AppColors.button;
+        case _WeekStatus.past:
+          return const Color(0xFFDAD7D0);
+        case _WeekStatus.upcoming:
+          return const Color(0xFFF3EFE8);
+      }
+    }
+
+    _WeekStatus statusFor(DateTime ws) {
+      if (ws.isBefore(joinWeek)) return _WeekStatus.past;
+      if (ws.isAfter(currentWeek)) return _WeekStatus.upcoming;
+      if (completedWeeks.contains(ws)) return _WeekStatus.completed;
+      return _WeekStatus.missed;
     }
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -182,7 +213,7 @@ class _Heatmap52 extends StatelessWidget {
                   width: dotSize,
                   height: dotSize,
                   decoration: BoxDecoration(
-                    color: (weekCount[weeks[i]] ?? 0) > 0 ? cs.primary : cs.outlineVariant.withOpacity(0.35),
+                    color: colorFor(statusFor(weeks[i])),
                     borderRadius: BorderRadius.circular(dotSize / 2),
                   ),
                 ),
@@ -197,7 +228,8 @@ class _Heatmap52 extends StatelessWidget {
       final months = <Widget>[for (int m = 1; m <= 12; m++) buildMonth(year, m)];
 
       // Legend
-      Widget legendBox(Color color) => Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)));
+      Widget legendBox(Color color) =>
+          Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)));
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -209,18 +241,31 @@ class _Heatmap52 extends StatelessWidget {
             children: months,
           ),
           const SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            legendBox(cs.outlineVariant.withOpacity(0.35)),
-            const SizedBox(width: 6),
-            Text('Incomplete', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-            const SizedBox(width: 16),
-            legendBox(cs.primary),
-            const SizedBox(width: 6),
-            Text('Completed', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-          ])
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
+            children: [
+              _legendEntry(context, legendBox(colorFor(_WeekStatus.past)), 'Past Weeks'),
+              _legendEntry(context, legendBox(colorFor(_WeekStatus.completed)), 'Completed'),
+              _legendEntry(context, legendBox(colorFor(_WeekStatus.missed)), 'Missed'),
+              _legendEntry(context, legendBox(colorFor(_WeekStatus.upcoming)), 'Upcoming'),
+            ],
+          )
         ],
       );
     });
+  }
+
+  Widget _legendEntry(BuildContext context, Widget swatch, String label) {
+    final textStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      swatch,
+      const SizedBox(width: 6),
+      Text(label, style: textStyle),
+    ]);
   }
 }
 
@@ -254,8 +299,15 @@ Widget _metricCard(BuildContext context, String label, String value, {bool flame
         const SizedBox(height: 8),
         Text('${flame ? '🔥 ' : ''}$value',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800)),
       ]),
     ),
   );
+}
+
+DateTime _startOfWeek(DateTime date) {
+  final base = DateTime(date.year, date.month, date.day);
+  final weekday = base.weekday % 7; // Sunday => 0
+  final start = base.subtract(Duration(days: weekday));
+  return DateTime(start.year, start.month, start.day);
 }

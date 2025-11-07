@@ -37,6 +37,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     final gestures = ref.watch(weeklyGesturesProvider);
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final current = notifier.currentWeek();
+    final hasCompleted = gestures.any((g) => g.completed);
     WeeklyGesture? bonus;
     if (current.id.isNotEmpty) {
       final id = '${current.id}-bonus';
@@ -55,8 +56,10 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _streakBanner(context, streak),
-        const SizedBox(height: 12),
+        if (hasCompleted) ...[
+          _streakBanner(context, streak),
+          const SizedBox(height: 12),
+        ],
         _actCard(context, ref, current, title, cs),
         const SizedBox(height: 16),
         Text('Extra inspiration',
