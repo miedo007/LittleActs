@@ -44,6 +44,8 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
       body: CalmBackground(
         padding: const EdgeInsets.all(16),
         child: _step == 0
