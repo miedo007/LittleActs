@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
-import 'package:nudge/shared/widgets/glass_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nudge/shared/style/palette.dart';
 
@@ -43,6 +42,8 @@ class PaywallScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: CalmBackground(
         decorative: true,
         intensityLight: 0.14,
@@ -84,13 +85,24 @@ class PaywallScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              GlassCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 25,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Removed 'Choose your plan' title
                       const SizedBox(height: 4),
                       Builder(builder: (_) {
                         final plan = ref.watch(_planProvider);
@@ -141,41 +153,47 @@ class PaywallScreen extends ConsumerWidget {
                                 selected: plan == _Plan.weekly,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.transparent),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: Colors.white, width: 0),
                               ),
-                              child: Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Free trial enabled',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: cs.onSurfaceVariant),
+                                      ),
+                                      const Spacer(),
+                                      Transform.scale(
+                                        scale: 0.85,
+                                        child: Switch(
+                                          value: ref.watch(_trialEnabledProvider),
+                                          onChanged: (v) => ref.read(_trialEnabledProvider.notifier).state = v,
+                                          activeTrackColor: const Color(0xFF53D476),
+                                          activeThumbColor: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'Free trial enabled',
+                                    'No payment required today',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall
-                                        ?.copyWith(color: cs.onSurfaceVariant),
-                                  ),
-                                  const Spacer(),
-                                  Transform.scale(
-                                    scale: 0.85,
-                                    child: Switch(
-                                      value: ref.watch(_trialEnabledProvider),
-                                      onChanged: (v) => ref.read(_trialEnabledProvider.notifier).state = v,
-                                      activeTrackColor: const Color(0xFF53D476),
-                                      activeThumbColor: Colors.white, // white thumb when ON
-                                    ),
+                                        ?.copyWith(fontWeight: FontWeight.w600, color: AppColors.title),
                                   ),
                                 ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Center(
-                              child: Text(
-                                'No payment required today',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -185,7 +203,7 @@ class PaywallScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 120),
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -241,62 +259,52 @@ class PaywallScreen extends ConsumerWidget {
                           Text('Processing...'),
                         ],
                       )
-                    : Text(isPro ? 'Premium active' : 'Continue'),
+                    : Text(isPro ? 'Premium active' : 'Start My 3-Day Free Trial'),
               ),
               const SizedBox(height: 8),
-              TextButton(
-                onPressed: purchasing
-                    ? null
-                    : () async {
-                        try {
-                          ref.read(_purchasingProvider.notifier).state = true;
-                          await ref.read(premiumProvider.notifier).restore();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Restore requested')),
-                            );
-                          }
-                        } finally {
-                          ref.read(_purchasingProvider.notifier).state = false;
-                        }
-                      },
-                child: const Text('Restore Purchases'),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () async {
+                  _LinkButton(
+                    label: 'Privacy Policy',
+                    onTap: () async {
                       final uri = Uri.parse('https://docs.google.com/document/d/1GGduvRVdPEk4ASX04e5As3OERoDEkq9NyKAhaqj2nJg/edit?usp=sharing');
                       await launchUrl(uri, mode: LaunchMode.externalApplication);
                     },
-                    child: Text(
-                      'Privacy Policy',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: cs.onSurfaceVariant, decoration: TextDecoration.underline),
-                    ),
                   ),
-                  const SizedBox(width: 16),
+                  _LinkButton(
+                    label: 'Terms of Use',
+                    onTap: () async {
+                      final uri = Uri.parse('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                  ),
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    onPressed: () async {
-                      final uri = Uri.parse('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    },
+                    onPressed: purchasing
+                        ? null
+                        : () async {
+                            try {
+                              ref.read(_purchasingProvider.notifier).state = true;
+                              await ref.read(premiumProvider.notifier).restore();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Restore requested')),
+                                );
+                              }
+                            } finally {
+                              ref.read(_purchasingProvider.notifier).state = false;
+                            }
+                          },
                     child: Text(
-                      'Terms of Use',
+                      'Restore Purchases',
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -461,6 +469,29 @@ class _PlanTile extends StatelessWidget {
             const Icon(Icons.check_circle, color: AppColors.icon),
         ],
       ),
+    );
+  }
+}
+
+class _LinkButton extends StatelessWidget {
+  final String label;
+  final Future<void> Function()? onTap;
+  const _LinkButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context)
+        .textTheme
+        .bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, decoration: TextDecoration.underline);
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: onTap == null ? null : () => onTap!(),
+      child: Text(label, style: style),
     );
   }
 }

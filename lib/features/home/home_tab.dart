@@ -113,6 +113,25 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             ),
           ),
         ),
+        if (!g.completed && timeLeft != null)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: const BoxDecoration(color: Colors.white),
+            child: Row(
+              children: [
+                const Icon(Icons.hourglass_bottom_rounded, size: 16, color: AppColors.icon),
+                const SizedBox(width: 6),
+                Text(
+                  'Time left: ${_formatTimeLeft(timeLeft)}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -164,22 +183,6 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             const SizedBox(height: 6),
             if (g.category.isNotEmpty)
               _categoryTag(context, g.category),
-            if (!g.completed && timeLeft != null) ...[
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(Icons.hourglass_bottom_rounded, size: 16, color: AppColors.icon),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Time left: ${_formatTimeLeft(timeLeft)}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium
-                        ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ],
             Text(
               (g.description != null && g.description!.isNotEmpty) ? g.description! : _descFor(g),
               style: Theme.of(context)

@@ -182,6 +182,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                       }
                     }
                     final current = ref.read(partnerProvider);
+                    final needsQuiz = current?.loveLanguagePrimary == null;
                     final updated = Partner(
                       name: _nameController.text.trim(),
                       gender: _gender == 'Other'
@@ -202,7 +203,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                     );
                     await ref.read(partnerProvider.notifier).savePartner(updated);
                     if (!mounted) return;
-                    if (current == null) {
+                    if (needsQuiz) {
                       context.goNamed('loveLanguageQuiz');
                     } else {
                       Navigator.of(context).maybePop();
@@ -300,6 +301,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   Future<void> pickBirthday() async {
     final now = DateTime.now();
     final initial = _birthday ?? DateTime(now.year - 25, now.month, now.day);
+    FocusScope.of(context).unfocus();
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -317,6 +319,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
     Future<void> pickTogetherSince() async {
       final now = DateTime.now();
       final initial = _togetherSince ?? DateTime(now.year - 2, now.month, now.day);
+      FocusScope.of(context).unfocus();
       final picked = await showDatePicker(
         context: context,
         initialDate: initial,
