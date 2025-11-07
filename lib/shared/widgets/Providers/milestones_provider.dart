@@ -4,17 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nudge/models/milestone.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 
 final milestonesProvider =
     StateNotifierProvider<MilestonesNotifier, List<Milestone>>(
-  (ref) => MilestonesNotifier(),
+  (ref) => MilestonesNotifier(ref),
 );
 
 class MilestonesNotifier extends StateNotifier<List<Milestone>> {
-  MilestonesNotifier() : super(const []) {
+  MilestonesNotifier(this._ref) : super(const []) {
+    _premiumSub = _ref.listen<bool>(premiumProvider, (previous, next) {
+      if (next && previous != true) {
+        _reschedule();
+      }
+    });
     _load();
   }
 
+  final Ref _ref;
+  late final ProviderSubscription<bool> _premiumSub;
   static const _key = 'milestones';
 
   Future<void> _load() async {
@@ -57,6 +65,7 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
 
   // ---------- Notification Sync ----------
   Future<void> _reschedule() async {
+    if (!_ref.read(premiumProvider)) return;
     // Build the list of next occurrences (handles yearly repeats)
     final now = DateTime.now();
     final nextDates = <DateTime>[];
@@ -75,11 +84,18 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
     }
 
     // Schedule reminders 7 days before each milestone
+    if (nextDates.isEmpty) return;
     await NotificationService().scheduleMilestoneReminders(
       nextDates,
       names: names,
       daysBefore: 3,
     );
+  }
+
+  @override
+  void dispose() {
+    _premiumSub.close();
+    super.dispose();
   }
 }
 

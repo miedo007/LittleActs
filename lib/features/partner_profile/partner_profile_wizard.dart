@@ -16,6 +16,7 @@ class PartnerProfileScreen extends ConsumerStatefulWidget {
 class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final FocusNode _nameFocus = FocusNode();
   final _customGenderController = TextEditingController();
   String? _gender;
   DateTime? _birthday;
@@ -40,6 +41,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _customGenderController.dispose();
+    _nameFocus.dispose();
     super.dispose();
   }
 
@@ -91,7 +93,9 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                                       if (_step == 1) ...[
                                         TextFormField(
                                           controller: _nameController,
+                                          focusNode: _nameFocus,
                                           textInputAction: TextInputAction.next,
+                                          textCapitalization: TextCapitalization.words,
                                           decoration: const InputDecoration(labelText: 'Partner name'),
                                           validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                                         ),
@@ -301,6 +305,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   Future<void> pickBirthday() async {
     final now = DateTime.now();
     final initial = _birthday ?? DateTime(now.year - 25, now.month, now.day);
+    _nameFocus.unfocus();
     FocusScope.of(context).unfocus();
     final picked = await showDatePicker(
       context: context,
@@ -319,6 +324,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
     Future<void> pickTogetherSince() async {
       final now = DateTime.now();
       final initial = _togetherSince ?? DateTime(now.year - 2, now.month, now.day);
+      _nameFocus.unfocus();
       FocusScope.of(context).unfocus();
       final picked = await showDatePicker(
         context: context,

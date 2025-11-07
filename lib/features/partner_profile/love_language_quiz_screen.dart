@@ -151,7 +151,7 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_completed_setup', true);
     if (!mounted) return;
-    context.goNamed('quizTeaser');
+    context.goNamed('quizProcessing');
   }
 
   List<String> _topTwo(Map<String, int> map) {

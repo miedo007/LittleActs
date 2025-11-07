@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge/App/router.dart';
 import 'package:nudge/App/theme.dart';
-import 'package:nudge/shared/Services/notification_service.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
 import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
@@ -19,7 +18,7 @@ class NudgeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Nudge',
+      title: 'Little Acts',
       theme: appTheme,
       darkTheme: darkAppTheme,
       themeMode: ThemeMode.light,
@@ -51,8 +50,6 @@ class _AppWarmupState extends ConsumerState<_AppWarmup> {
       ref.read(partnerProvider);
       ref.read(milestonesProvider);
       ref.read(weeklyGesturesProvider);
-      // Initialize notifications after first frame to reduce startup blocking
-      await NotificationService().init();
     });
   }
 

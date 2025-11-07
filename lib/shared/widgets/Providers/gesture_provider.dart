@@ -131,20 +131,19 @@ final weeklyGesturesProvider =
 
 class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
   WeeklyGesturesNotifier(this._ref) : super(const []) {
+    _premiumSub = _ref.listen<bool>(premiumProvider, (previous, next) {
+      if (next && previous != true) {
+        _scheduleNotifications();
+      }
+    });
     _load().then((_) async {
       await _ensureThisWeekGesture();
-      final partner = _ref.read(partnerProvider);
-      await NotificationService().scheduleWeeklyNudge(partnerName: (partner?.name.isNotEmpty ?? false) ? partner!.name : 'your partner');
-      // Also schedule completion reminder 3 days after the drop (upcoming Sunday)
-      final now = DateTime.now();
-      final weekday = now.weekday % 7; // Sunday=0
-      final daysUntilSunday = (7 - weekday) % 7;
-      final drop = DateTime(now.year, now.month, now.day).add(Duration(days: daysUntilSunday)).add(const Duration(hours: 9));
-      await NotificationService().scheduleActCompletionReminder(drop);
+      await _scheduleNotifications();
     });
   }
 
   final Ref _ref;
+  late final ProviderSubscription<bool> _premiumSub;
   static const _key = 'weekly_gestures';
 
   // ---------- Persistence ----------
@@ -658,6 +657,26 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
       prev = w;
     }
     return best;
+  }
+
+  Future<void> _scheduleNotifications() async {
+    if (!_ref.read(premiumProvider)) return;
+    final partner = _ref.read(partnerProvider);
+    await NotificationService().scheduleWeeklyNudge(
+        partnerName: (partner?.name.isNotEmpty ?? false) ? partner!.name : 'your partner');
+    final now = DateTime.now();
+    final weekday = now.weekday % 7; // Sunday=0
+    final daysUntilSunday = (7 - weekday) % 7;
+    final drop = DateTime(now.year, now.month, now.day)
+        .add(Duration(days: daysUntilSunday))
+        .add(const Duration(hours: 9));
+    await NotificationService().scheduleActCompletionReminder(drop);
+  }
+
+  @override
+  void dispose() {
+    _premiumSub.close();
+    super.dispose();
   }
 }
 
