@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,16 +19,17 @@ final premiumProductsProvider = FutureProvider<PremiumProducts>((ref) async {
   final iap = InAppPurchase.instance;
   final available = await iap.isAvailable();
   if (!available) return const PremiumProducts();
-  final resp = await iap.queryProductDetails({
-    PremiumNotifier.weeklyProductId,
-    PremiumNotifier.yearlyProductId,
-  });
-  ProductDetails? weekly;
-  ProductDetails? yearly;
-  for (final p in resp.productDetails) {
-    if (p.id == PremiumNotifier.weeklyProductId) weekly = p;
-    if (p.id == PremiumNotifier.yearlyProductId) yearly = p;
-  }
+  final resp =
+      await iap.queryProductDetails(PremiumNotifier.allProductIds);
+  final products = resp.productDetails;
+  final weekly = _selectFirstMatchingProduct(
+    products,
+    PremiumNotifier.weeklyProductCandidates,
+  );
+  final yearly = _selectFirstMatchingProduct(
+    products,
+    PremiumNotifier.yearlyProductCandidates,
+  );
   return PremiumProducts(weekly: weekly, yearly: yearly);
 });
 
@@ -37,12 +39,33 @@ class PremiumNotifier extends StateNotifier<bool> {
   }
 
   static const _key = 'is_premium';
-  static const String weeklyProductId = 'com.nudge.premium.weekly';
-  static const String yearlyProductId = 'com.nudge.premium.yearly';
+  static const String entitlementPrefsKey = _key;
+  static const List<String> weeklyProductCandidates = [
+    'Weekly5.99',
+    'com.thescript.littleacts.Weekly5.99',
+    'com.thescript.litteacts.Weekly5.99',
+    'com.thescript.litteacts.premium.weekly',
+    'com.thescript.littleacts.premium.weekly',
+    'com.nudge.premium.weekly',
+  ];
+  static const List<String> yearlyProductCandidates = [
+    'Yearly49.99',
+    'com.thescript.littleacts.Yearly49.99',
+    'com.thescript.litteacts.Yearly49.99',
+    'com.thescript.litteacts.premium.yearly',
+    'com.thescript.littleacts.premium.yearly',
+    'com.nudge.premium.yearly',
+  ];
+  static Set<String> get allProductIds => {
+        ...weeklyProductCandidates,
+        ...yearlyProductCandidates,
+      };
 
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _sub;
   bool _iapAvailable = false;
+  ProductDetails? _weeklyProduct;
+  ProductDetails? _yearlyProduct;
 
   Future<void> _init() async {
     // Load persisted entitlement
@@ -58,14 +81,27 @@ class PremiumNotifier extends StateNotifier<bool> {
     });
 
     // Warm up billing with a product query
-    if (_iapAvailable) {
-      await _queryProducts();
-    }
+    await _refreshProducts();
   }
 
-  Future<void> _queryProducts() async {
-    final ids = {weeklyProductId, yearlyProductId};
-    await _iap.queryProductDetails(ids);
+  Future<void> _refreshProducts() async {
+    if (!await _ensureAvailable()) return;
+    final resp = await _iap.queryProductDetails(allProductIds);
+    _cacheProducts(resp.productDetails);
+  }
+
+  void _cacheProducts(Iterable<ProductDetails> products) {
+    final list = products.toList();
+    final weekly = _selectFirstMatchingProduct(
+      list,
+      weeklyProductCandidates,
+    );
+    final yearly = _selectFirstMatchingProduct(
+      list,
+      yearlyProductCandidates,
+    );
+    if (weekly != null) _weeklyProduct = weekly;
+    if (yearly != null) _yearlyProduct = yearly;
   }
 
   Future<void> _set(bool v) async {
@@ -75,19 +111,23 @@ class PremiumNotifier extends StateNotifier<bool> {
   }
 
   // Purchase APIs (called from UI)
-  Future<void> buyWeekly() => _buy(weeklyProductId);
-  Future<void> buyYearly() => _buy(yearlyProductId);
+  Future<void> buyWeekly() => _buy(weekly: true);
+  Future<void> buyYearly() => _buy(weekly: false);
 
-  Future<void> _buy(String productId) async {
-    if (!_iapAvailable) {
-      _iapAvailable = await _iap.isAvailable();
-      if (!_iapAvailable) return;
-    }
-    final response = await _iap.queryProductDetails({productId});
-    if (response.notFoundIDs.isNotEmpty || response.productDetails.isEmpty) {
+  Future<void> _buy({required bool weekly}) async {
+    if (!await _ensureAvailable()) {
+      debugPrint('In-app purchases are not available on this device.');
       return;
     }
-    final product = response.productDetails.first;
+    await _ensureProductsResolved();
+    final product = weekly ? _weeklyProduct : _yearlyProduct;
+    if (product == null) {
+      throw StateError(
+        weekly
+            ? 'Weekly subscription product is not configured for this bundle.'
+            : 'Yearly subscription product is not configured for this bundle.',
+      );
+    }
     final purchaseParam = PurchaseParam(productDetails: product);
     await _iap.buyNonConsumable(purchaseParam: purchaseParam);
   }
@@ -106,7 +146,8 @@ class PremiumNotifier extends StateNotifier<bool> {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           final isEntitled =
-              p.productID == weeklyProductId || p.productID == yearlyProductId;
+              weeklyProductCandidates.contains(p.productID) ||
+              yearlyProductCandidates.contains(p.productID);
           if (isEntitled) {
             await _set(true);
           }
@@ -125,9 +166,36 @@ class PremiumNotifier extends StateNotifier<bool> {
     }
   }
 
+  Future<bool> _ensureAvailable() async {
+    if (!_iapAvailable) {
+      _iapAvailable = await _iap.isAvailable();
+    }
+    return _iapAvailable;
+  }
+
+  Future<void> _ensureProductsResolved() async {
+    if (_weeklyProduct != null && _yearlyProduct != null) return;
+    await _refreshProducts();
+  }
+
   @override
   void dispose() {
     _sub?.cancel();
     super.dispose();
   }
+}
+
+ProductDetails? _selectFirstMatchingProduct(
+  Iterable<ProductDetails> products,
+  List<String> preferredIds,
+) {
+  if (products.isEmpty) return null;
+  final byId = <String, ProductDetails>{
+    for (final product in products) product.id: product,
+  };
+  for (final id in preferredIds) {
+    final product = byId[id];
+    if (product != null) return product;
+  }
+  return null;
 }

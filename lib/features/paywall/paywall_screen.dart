@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
@@ -28,10 +29,15 @@ class PaywallScreen extends ConsumerWidget {
         // Ask for notification permission only after the user subscribes
         await NotificationService().requestPermissions();
         if (!context.mounted) return;
+        final router = GoRouter.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Premium activated')),
         );
-        Navigator.of(context).maybePop();
+        if (router.canPop()) {
+          router.pop();
+        } else {
+          router.goNamed('home');
+        }
       }
     });
 
@@ -207,10 +213,14 @@ class PaywallScreen extends ConsumerWidget {
                           } else {
                             await ref.read(premiumProvider.notifier).buyYearly();
                           }
-                        } catch (e) {
+                        } catch (e, st) {
+                          debugPrint('Paywall purchase error: $e\n$st');
                           if (context.mounted) {
+                            final message = e is StateError
+                                ? e.message ?? 'This plan is not available yet.'
+                                : 'Purchase failed. Please try again.';
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Purchase failed. Please try again.')),
+                              SnackBar(content: Text(message)),
                             );
                           }
                         } finally {
@@ -453,5 +463,3 @@ class _PlanTile extends StatelessWidget {
     );
   }
 }
-
-

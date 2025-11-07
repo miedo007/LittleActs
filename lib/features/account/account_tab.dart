@@ -20,6 +20,7 @@ class AccountTab extends ConsumerStatefulWidget {
 class _AccountTabState extends ConsumerState<AccountTab> {
   bool _notificationsEnabled = true;
   bool _loading = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -28,21 +29,39 @@ class _AccountTabState extends ConsumerState<AccountTab> {
   }
 
   Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _loading = false;
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+        _loading = false;
+        _loadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _loadError = 'Could not load preferences';
+      });
+    }
   }
 
   Future<void> _setNotifications(bool v) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notifications_enabled', v);
     setState(() => _notificationsEnabled = v);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(v ? 'Notifications enabled' : 'Notifications disabled')),
-    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notifications_enabled', v);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(v ? 'Notifications enabled' : 'Notifications disabled')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _notificationsEnabled = !v);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not update notifications. Please try again.')),
+      );
+    }
   }
 
   Future<void> _deleteAllData() async {
@@ -61,9 +80,22 @@ class _AccountTabState extends ConsumerState<AccountTab> {
     // Clear providers and persisted keys
     await ref.read(partnerProvider.notifier).clear();
     await ref.read(milestonesProvider.notifier).clear();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('weekly_gestures');
-    await prefs.remove('has_completed_setup');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('weekly_gestures');
+      await prefs.remove('has_completed_setup');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not delete stored data.')));
+      return;
+    }
+    try {
+      await ref.read(premiumProvider.notifier).downgrade();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not reset premium state.')));
+      return;
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All local data deleted')));
   }
@@ -76,6 +108,33 @@ class _AccountTabState extends ConsumerState<AccountTab> {
 
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_loadError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.info_outline, size: 36),
+            const SizedBox(height: 12),
+            Text(
+              _loadError!,
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: () {
+                setState(() {
+                  _loading = true;
+                });
+                _loadPrefs();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
     }
 
     return ListView(
