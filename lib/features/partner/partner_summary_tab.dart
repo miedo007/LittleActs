@@ -255,73 +255,39 @@ class _LoveDonut extends StatefulWidget {
 }
 
 class _LoveDonutState extends State<_LoveDonut> {
-  String? _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.pct.isNotEmpty) {
-      final sorted = widget.pct.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-      _selected = sorted.first.key;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final total = widget.pct.values.fold<double>(0, (a, b) => a + b);
     final sorted = widget.pct.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+    final primary = sorted.isNotEmpty ? sorted.first.key : null;
     final cs = Theme.of(context).colorScheme;
     return LayoutBuilder(builder: (context, c) {
       final size = 140.0;
       return Row(
         children: [
-          GestureDetector(
-            onTapUp: (d) {
-              final box = context.findRenderObject() as RenderBox?;
-              if (box == null) return;
-              final center = Offset(size / 2, size / 2);
-              final local = box.globalToLocal(d.globalPosition);
-              final dx = local.dx - center.dx;
-              final dy = local.dy - center.dy;
-              final angle = (math.atan2(dy, dx) + 2 * math.pi) % (2 * math.pi);
-              // Map angle to slice
-              double acc = 0;
-              for (final e in sorted) {
-                final double sweep = total == 0 ? 0.0 : (e.value / total) * 2 * math.pi;
-                if (angle >= acc && angle < acc + sweep) {
-                  setState(() => _selected = e.key);
-                  break;
-                }
-                acc += sweep;
-              }
-            },
-            child: RepaintBoundary(
-              child: SizedBox(
-                width: size,
-                height: size,
-                child: CustomPaint(
-                  painter: _DonutPainter(
-                    pct: widget.pct,
-                    colorFor: widget.colorFor,
-                    highlight: _selected,
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_selected ?? '',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface)),
-                        if (_selected != null)
-                          Text('${widget.pct[_selected!]?.round() ?? 0}%',
-                              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
-                      ],
-                    ),
+          RepaintBoundary(
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: CustomPaint(
+                painter: _DonutPainter(
+                  pct: widget.pct,
+                  colorFor: widget.colorFor,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(primary ?? '',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface)),
+                      if (primary != null)
+                        Text('${widget.pct[primary]?.round() ?? 0}%',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
+                    ],
                   ),
                 ),
               ),
@@ -354,8 +320,7 @@ class _LoveDonutState extends State<_LoveDonut> {
 class _DonutPainter extends CustomPainter {
   final Map<String, double> pct;
   final Color Function(String key) colorFor;
-  final String? highlight;
-  _DonutPainter({required this.pct, required this.colorFor, this.highlight});
+  _DonutPainter({required this.pct, required this.colorFor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -368,10 +333,9 @@ class _DonutPainter extends CustomPainter {
     double start = -math.pi / 2; // top
     for (final e in sorted) {
       final double sweep = total == 0 ? 0.0 : (e.value / total) * 2 * math.pi;
-      final double sw = (thickness * ((e.key == highlight) ? 1.2 : 1.0)).toDouble();
       final paint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = sw
+        ..strokeWidth = thickness
         ..strokeCap = StrokeCap.round
         ..color = colorFor(e.key);
       canvas.drawArc(Rect.fromCircle(center: center, radius: radius), start, sweep, false, paint);
@@ -381,7 +345,7 @@ class _DonutPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) {
-    return oldDelegate.pct != pct || oldDelegate.highlight != highlight;
+    return oldDelegate.pct != pct;
   }
 }
 

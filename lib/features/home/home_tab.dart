@@ -106,44 +106,45 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 child: Text(title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
               ),
-              FutureBuilder<int>(
-                future: _refreshesLeftFuture,
-                builder: (context, snap) {
-                  final left = snap.data ?? 0;
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(999),
-                    onTap: () async {
-                      final ok = await notifier.refreshWithinSameCategory();
-                      // Refresh the memoized future after a successful refresh
-                      setState(() {
-                        _refreshesLeftFuture = notifier.refreshesLeftForCurrentWeek();
-                      });
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(ok
-                              ? 'Refreshed within same category'
-                              : 'Refresh limit reached for this week')));
-                    },
-                    child: Row(children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.icon.withOpacity(0.14),
-                          shape: BoxShape.circle,
+              if (!g.completed)
+                FutureBuilder<int>(
+                  future: _refreshesLeftFuture,
+                  builder: (context, snap) {
+                    final left = snap.data ?? 0;
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(999),
+                      onTap: () async {
+                        final ok = await notifier.refreshWithinSameCategory();
+                        // Refresh the memoized future after a successful refresh
+                        setState(() {
+                          _refreshesLeftFuture = notifier.refreshesLeftForCurrentWeek();
+                        });
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(ok
+                                ? 'Refreshed within same category'
+                                : 'Refresh limit reached for this week')));
+                      },
+                      child: Row(children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppColors.icon.withOpacity(0.14),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.icon),
                         ),
-                        child: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.icon),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('$left left',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600)),
-                    ]),
-                  );
-                },
-              )
+                        const SizedBox(width: 8),
+                        Text('$left left',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600)),
+                      ]),
+                    );
+                  },
+                )
             ]),
             const SizedBox(height: 6),
             if (g.category.isNotEmpty)
