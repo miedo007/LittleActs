@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,6 +72,15 @@ class _QuizProcessingScreenState extends ConsumerState<QuizProcessingScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                if (partner?.photoPath != null &&
+                    partner!.photoPath!.isNotEmpty &&
+                    File(partner.photoPath!).existsSync()) ...[
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(File(partner!.photoPath!)),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Text(
                   'Learning what makes $titleName feel loved…',
                   textAlign: TextAlign.center,

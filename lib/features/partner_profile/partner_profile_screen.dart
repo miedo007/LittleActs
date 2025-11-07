@@ -142,11 +142,11 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
         const SizedBox(height: 16),
 
-        const _Bullet(text: 'Name — for a more personal touch'),
+        const _Bullet(text: 'Name  for a more personal touch'),
 
-        const _Bullet(text: 'Love language ratings — guide the kind of nudges you get'),
+        const _Bullet(text: 'Love language ratings  guide the kind of nudges you get'),
 
-        const _Bullet(text: 'Short and simple — less than 1 minute'),
+        const _Bullet(text: 'Short and simple  less than 1 minute'),
 
         const Spacer(),
 
@@ -190,7 +190,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 2:
 
-        desc = 'Quality time means focused attention without distractions — shared activities, conversations, or simple presence.';
+        desc = 'Quality time means focused attention without distractions  shared activities, conversations, or simple presence.';
 
         value = _qTime;
 
@@ -200,7 +200,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 3:
 
-        desc = 'Words of affirmation are sincere compliments, appreciation, and encouragement — spoken or written.';
+        desc = 'Words of affirmation are sincere compliments, appreciation, and encouragement  spoken or written.';
 
         value = _words;
 
@@ -210,7 +210,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 4:
 
-        desc = 'Acts of service are helpful gestures that reduce friction — doing chores, preparing something, or lending a hand.';
+        desc = 'Acts of service are helpful gestures that reduce friction  doing chores, preparing something, or lending a hand.';
 
         value = _service;
 
@@ -220,7 +220,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       case 5:
 
-        desc = 'Physical touch is affection through contact — hugs, cuddles, hand-holding, or a gentle massage.';
+        desc = 'Physical touch is affection through contact  hugs, cuddles, hand-holding, or a gentle massage.';
 
         value = _touch;
 
@@ -232,7 +232,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
       default:
 
-        desc = 'Receiving gifts are thoughtful tokens — from small treats to meaningful surprises that show you care.';
+        desc = 'Receiving gifts are thoughtful tokens  from small treats to meaningful surprises that show you care.';
 
         value = _gifts;
 
@@ -278,7 +278,16 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
 
           if (_nameController.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add partner name'))); setState(() => _step = 1); return; }
 
-          final partner = Partner(name: _nameController.text.trim(), qualityTime: _qTime, wordsOfAffirmation: _words, actsOfService: _service, physicalTouch: _touch, receivingGifts: _gifts);
+          final existing = ref.read(partnerProvider);
+          final partner = Partner(
+            name: _nameController.text.trim(),
+            qualityTime: _qTime,
+            wordsOfAffirmation: _words,
+            actsOfService: _service,
+            physicalTouch: _touch,
+            receivingGifts: _gifts,
+            notificationOptIn: existing?.notificationOptIn ?? false,
+          );
 
           await ref.read(partnerProvider.notifier).savePartner(partner);
 

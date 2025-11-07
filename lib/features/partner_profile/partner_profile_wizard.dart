@@ -214,6 +214,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                       budget: current?.budget,
                       loveLanguagePrimary: current?.loveLanguagePrimary,
                       loveLanguageSecondary: current?.loveLanguageSecondary,
+                      notificationOptIn: current?.notificationOptIn ?? false,
                     );
                     await ref.read(partnerProvider.notifier).savePartner(updated);
                     if (!mounted) return;

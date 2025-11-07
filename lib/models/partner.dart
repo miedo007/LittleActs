@@ -9,6 +9,7 @@ class Partner {
   final String? dislikes;
   final String? budget;
   final String? photoPath;
+  final bool notificationOptIn;
   // Love language ratings: 0–5
   final int? qualityTime;
   final int? wordsOfAffirmation;
@@ -27,6 +28,7 @@ class Partner {
     this.dislikes,
     this.budget,
     this.photoPath,
+    this.notificationOptIn = false,
     this.qualityTime,
     this.wordsOfAffirmation,
     this.actsOfService,
@@ -45,6 +47,7 @@ class Partner {
         'dislikes': dislikes,
         'budget': budget,
         'photoPath': photoPath,
+        'notificationOptIn': notificationOptIn,
         'qualityTime': qualityTime,
         'wordsOfAffirmation': wordsOfAffirmation,
         'actsOfService': actsOfService,
@@ -67,6 +70,7 @@ class Partner {
         dislikes: json['dislikes'],
         budget: json['budget'],
         photoPath: json['photoPath'],
+        notificationOptIn: (json['notificationOptIn'] as bool?) ?? false,
         qualityTime: json['qualityTime'],
         wordsOfAffirmation: json['wordsOfAffirmation'],
         actsOfService: json['actsOfService'],
@@ -87,6 +91,7 @@ extension PartnerCopyExt on Partner {
     String? dislikes,
     String? budget,
     String? photoPath,
+    bool? notificationOptIn,
     int? qualityTime,
     int? wordsOfAffirmation,
     int? actsOfService,
@@ -104,6 +109,7 @@ extension PartnerCopyExt on Partner {
       dislikes: dislikes ?? this.dislikes,
       budget: budget ?? this.budget,
       photoPath: photoPath ?? this.photoPath,
+      notificationOptIn: notificationOptIn ?? this.notificationOptIn,
       qualityTime: qualityTime ?? this.qualityTime,
       wordsOfAffirmation: wordsOfAffirmation ?? this.wordsOfAffirmation,
       actsOfService: actsOfService ?? this.actsOfService,

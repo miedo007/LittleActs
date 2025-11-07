@@ -145,6 +145,7 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
       actsOfService: toRating('Acts of Service'),
       physicalTouch: toRating('Physical Touch'),
       receivingGifts: toRating('Receiving Gifts'),
+      notificationOptIn: current?.notificationOptIn ?? false,
     );
     await ref.read(partnerProvider.notifier).savePartner(updated);
     // Mark onboarding + quiz as completed right at quiz finish

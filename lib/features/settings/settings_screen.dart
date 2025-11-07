@@ -280,6 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     actsOfService: current.actsOfService,
                     physicalTouch: current.physicalTouch,
                     receivingGifts: current.receivingGifts,
+                    notificationOptIn: current.notificationOptIn,
                   );
                   await ref.read(partnerProvider.notifier).savePartner(updated);
                   if (!context.mounted) return;

@@ -64,17 +64,20 @@ class NotificationService {
   }
 
   // Request OS notification permissions explicitly when user opts in
-  Future<void> requestPermissions() async {
+  Future<bool> requestPermissions() async {
     await init();
     final androidImpl =
         _plugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
-    await androidImpl?.requestNotificationsPermission();
+    final androidGranted =
+        await androidImpl?.requestNotificationsPermission() ?? true;
 
     final iosImpl = _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
-    await iosImpl?.requestPermissions(alert: true, badge: true, sound: true);
+    final iosGranted =
+        await iosImpl?.requestPermissions(alert: true, badge: true, sound: true) ?? true;
+    return androidGranted && iosGranted;
   }
 
   Future<void> cancelAll() async {
