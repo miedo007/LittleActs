@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/models/weekly_gesture.dart';
 import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class HomeTab extends ConsumerStatefulWidget {
   const HomeTab({super.key});
@@ -83,7 +84,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4))],
+        border: Border.all(color: AppColors.frameOutline),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -92,7 +94,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
           height: 160,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF695AD3), Color(0xFF9B8CF0)],
+              colors: [AppColors.button, AppColors.icon],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -129,17 +131,17 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                         width: 28,
                         height: 28,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF695AD3).withOpacity(0.14),
+                          color: AppColors.icon.withOpacity(0.14),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFF695AD3)),
+                        child: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.icon),
                       ),
                       const SizedBox(width: 8),
                       Text('$left left',
                           style: Theme.of(context)
                               .textTheme
                               .labelMedium
-                              ?.copyWith(color: const Color(0xFF8E4B63), fontWeight: FontWeight.w600)),
+                              ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600)),
                     ]),
                   );
                 },
@@ -158,7 +160,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             const SizedBox(height: 12),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF695AD3),
+                backgroundColor: AppColors.button,
                 shape: const StadiumBorder(),
                 minimumSize: const Size.fromHeight(48),
               ),
@@ -182,7 +184,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.frameOutline),
+      ),
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(bonus.title,
@@ -217,7 +223,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.white),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          border: Border.all(color: AppColors.frameOutline),
+        ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label, style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 4),
@@ -238,7 +248,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.frameOutline),
+      ),
       child: Row(children: [
         Icon(Icons.hourglass_bottom_rounded, color: cs.primary),
         const SizedBox(width: 10),
@@ -255,7 +269,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.frameOutline),
+      ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -280,7 +298,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             height: 64,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFE7D9FF), Color(0xFFF7EDF4)],
+                colors: [Color(0xFFFFCBB8), Color(0xFFFFF2EC)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -311,7 +329,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     if (c.contains('gift')) return ('Receiving Gifts', const Color(0xFFFDCB6E));
     if (c.contains('touch')) return ('Physical Touch', const Color(0xFFFF7675));
     if (c.contains('word') || c.contains('affirm')) return ('Words of Affirmation', const Color(0xFF6C63FF));
-    return ('Thoughtful Act', const Color(0xFF695AD3));
+    return ('Thoughtful Act', AppColors.button);
   }
 
   String _descFor(WeeklyGesture g) {

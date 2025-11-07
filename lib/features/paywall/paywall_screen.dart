@@ -7,6 +7,7 @@ import 'package:nudge/shared/Services/notification_service.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/widgets/glass_card.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 enum _Plan { weekly, yearly }
 
@@ -199,7 +200,7 @@ class PaywallScreen extends ConsumerWidget {
                 style: FilledButton.styleFrom(
                   shape: const StadiumBorder(),
                   minimumSize: const Size.fromHeight(52),
-                  backgroundColor: const Color(0xFF695AD3),
+                  backgroundColor: AppColors.button,
                   textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                 ),
                 onPressed: isPro || purchasing
@@ -457,7 +458,7 @@ class _PlanTile extends StatelessWidget {
             ),
           const SizedBox(width: 8),
           if (selected)
-            const Icon(Icons.check_circle, color: Color(0xFF695AD3)),
+            const Icon(Icons.check_circle, color: AppColors.icon),
         ],
       ),
     );

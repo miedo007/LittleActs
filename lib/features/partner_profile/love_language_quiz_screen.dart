@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class LoveLanguageQuizScreen extends ConsumerStatefulWidget {
   const LoveLanguageQuizScreen({super.key});
@@ -74,7 +75,7 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
               final cs = Theme.of(context).colorScheme;
               return LinearProgressIndicator(
                 value: (index.clamp(0, _questions.length)) / total,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF695AD3)),
+                valueColor: const AlwaysStoppedAnimation(AppColors.button),
                 backgroundColor: cs.outlineVariant.withOpacity(0.3),
               );
             }),
@@ -323,4 +324,3 @@ class _ResultRow extends StatelessWidget {
     );
   }
 }
-

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:nudge/models/milestone.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class MilestonePlannerScreen extends ConsumerStatefulWidget {
   const MilestonePlannerScreen({super.key});
@@ -68,19 +69,18 @@ class _MilestonePlannerScreenState
                   // Styled tile for milestone name input
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F3066),
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white, width: 1),
+                      border: Border.all(color: AppColors.frameOutline),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     child: TextFormField(
                       controller: _nameCtrl,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         labelText: 'Milestone name (e.g., Birthday, Anniversary)',
-                        labelStyle: TextStyle(color: Colors.white),
-                        hintStyle: TextStyle(color: Colors.white70),
+                        labelStyle: TextStyle(color: AppColors.bodyMuted),
+                        hintStyle: TextStyle(color: AppColors.bodyMuted),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
@@ -89,20 +89,23 @@ class _MilestonePlannerScreenState
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F3066),
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white, width: 1),
+                      border: Border.all(color: AppColors.frameOutline),
                     ),
                     child: Row(
                       children: [
                         Expanded(
                           child: TextButton.icon(
-                            icon: const Icon(Icons.calendar_month, color: Colors.white),
+                            icon: const Icon(Icons.calendar_month, color: AppColors.icon),
                             label: Text(
                               _pickedDate == null
                                   ? 'Pick date'
                                   : DateFormat.yMMMMd().format(_pickedDate!),
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             onPressed: () async {
                               final now = DateTime.now();
@@ -124,11 +127,11 @@ class _MilestonePlannerScreenState
                             Checkbox(
                               value: _repeatYearly,
                               onChanged: (v) => setState(() => _repeatYearly = v ?? true),
-                              side: const BorderSide(color: Colors.white),
-                              checkColor: const Color(0xFF0F3066),
-                              activeColor: Colors.white,
+                              side: const BorderSide(color: AppColors.frameOutline),
+                              checkColor: AppColors.surface,
+                              activeColor: AppColors.button,
                             ),
-                            const Text('Repeat yearly', style: TextStyle(color: Colors.white)),
+                            const Text('Repeat yearly'),
                           ],
                         ),
                       ],
@@ -139,9 +142,6 @@ class _MilestonePlannerScreenState
                     alignment: Alignment.centerRight,
                     child: FilledButton(
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0F3066),
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white, width: 1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: () async {
@@ -245,26 +245,29 @@ class _MilestonePlannerScreenState
                               .remove(m.id),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F3066),
+                              color: AppColors.surface,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white, width: 1),
+                              border: Border.all(color: AppColors.frameOutline),
                             ),
                             child: ListTile(
                               title: Text(
                                 m.name,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               subtitle: Text(
                                 m.repeatYearly
                                     ? 'Next: ${DateFormat.yMMMMd().format(next)}'
                                     : 'Date: ${DateFormat.yMMMMd().format(m.date)}',
-                                style: TextStyle(color: Colors.white.withOpacity(0.85)),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                               ),
                               trailing: Chip(
                                 label: Text(chipText),
-                                backgroundColor: Colors.white.withOpacity(0.15),
-                                side: const BorderSide(color: Colors.white),
-                                labelStyle: const TextStyle(color: Colors.white),
+                                backgroundColor: AppColors.button.withOpacity(0.12),
+                                side: const BorderSide(color: AppColors.button),
+                                labelStyle: const TextStyle(color: AppColors.icon),
                               ),
                             ),
                           ),
@@ -289,4 +292,3 @@ class _MilestonePlannerScreenState
     );
   }
 }
-

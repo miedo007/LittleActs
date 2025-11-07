@@ -1,8 +1,11 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:nudge/shared/style/palette.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
-import 'dart:math' as math;
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -80,7 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _Dots(index: _index, count: 4, activeColor: Color(0xFF695AD3)),
+              _Dots(index: _index, count: 4, activeColor: AppColors.button),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
@@ -88,7 +91,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     style: FilledButton.styleFrom(
                       shape: const StadiumBorder(),
                       minimumSize: const Size.fromHeight(52),
-                      backgroundColor: const Color(0xFF695AD3),
+                      backgroundColor: AppColors.button,
                       textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                     ),
                     onPressed: _index < 3
@@ -97,7 +100,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             if (!context.mounted) return;
                             context.goNamed('partnerProfile');
                           },
-                    child: Text(_index < 3 ? 'Continue' : 'Get Started'),
+                    child: Text(_index < 3 ? 'Start' : 'Get Started'),
                   ),
                 ),
               ]),
@@ -157,7 +160,7 @@ class _PerkPage extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
-                        ?.copyWith(color: const Color(0xFF232443), fontSize: 18, height: 1.45, fontWeight: FontWeight.w400),
+                        ?.copyWith(color: AppColors.title, fontSize: 18, height: 1.45, fontWeight: FontWeight.w400),
                   ),
                 ),
               ],
@@ -177,7 +180,7 @@ extension on _PerkPage {
         ?.copyWith(
             fontWeight: titleWeight ?? FontWeight.w800,
             fontSize: 28,
-            color: const Color(0xFF232443));
+            color: AppColors.title);
 
     if (highlightSubphrase == null || highlightSubphrase!.isEmpty) {
       return Text(title, textAlign: TextAlign.left, style: baseStyle);
@@ -206,54 +209,79 @@ extension on _PerkPage {
   }
 }
 
-class _SplashPage extends StatelessWidget {
+class _SplashPage extends StatefulWidget {
   const _SplashPage();
+
+  @override
+  State<_SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<_SplashPage> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(begin: 0.96, end: 1.04).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(
-          width: 260,
-          height: 260,
-          child: Image.asset('assets/logo.png', fit: BoxFit.contain, color: null),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Little Acts',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
-                fontSize: 54,
-                color: const Color(0xFF232443),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 260,
+            height: 260,
+            child: AnimatedBuilder(
+              animation: _scale,
+              builder: (context, child) => Transform.scale(
+                scale: _scale.value,
+                child: child,
               ),
-        ),
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Love made effortless',
+              child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Little Acts',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFF232443),
-                  fontWeight: FontWeight.w700,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.0,
+                  fontSize: 54,
+                  color: AppColors.title,
                 ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Small acts. Big love',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: const Color(0xFF232443),
-                  fontSize: 16,
-                ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Love made effortless',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.title,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -413,13 +441,6 @@ class _Dots extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
 
 
 

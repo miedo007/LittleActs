@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class QuizResultsTeaserScreen extends ConsumerWidget {
   const QuizResultsTeaserScreen({super.key});
@@ -119,7 +120,7 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
             style: FilledButton.styleFrom(
               shape: const StadiumBorder(),
               minimumSize: const Size.fromHeight(52),
-              backgroundColor: const Color(0xFF695AD3),
+              backgroundColor: AppColors.button,
               textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
             ),
             onPressed: () {
@@ -302,7 +303,6 @@ class _FadeSlideInState extends State<_FadeSlideIn> with SingleTickerProviderSta
     );
   }
 }
-
 
 
 

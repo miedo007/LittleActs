@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../style/palette.dart';
+
 class CalmBackground extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -18,8 +20,8 @@ class CalmBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Fixed gradient (light): top #EDEBFC to bottom #FAFAFE
-    const topColor = Color(0xFFEDEBFC);
-    const bottomColor = Color(0xFFFAFAFE);
+    const topColor = AppColors.gradientTop;
+    const bottomColor = AppColors.gradientBottom;
 
     final content = SafeArea(
       child: Padding(padding: padding ?? const EdgeInsets.all(16), child: child),

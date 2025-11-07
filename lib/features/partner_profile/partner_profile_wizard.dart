@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class PartnerProfileScreen extends ConsumerStatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -141,7 +142,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                   style: FilledButton.styleFrom(
                     shape: const StadiumBorder(),
                     minimumSize: const Size.fromHeight(52),
-                    backgroundColor: const Color(0xFF695AD3),
+                    backgroundColor: AppColors.button,
                     textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                   ),
                   onPressed: () => setState(() => _step = 1),
@@ -158,7 +159,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                   style: FilledButton.styleFrom(
                     shape: const StadiumBorder(),
                     minimumSize: const Size.fromHeight(52),
-                    backgroundColor: const Color(0xFF695AD3),
+                    backgroundColor: AppColors.button,
                     textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                   ),
                   onPressed: () async {
