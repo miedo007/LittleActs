@@ -93,6 +93,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
 
   Widget _actCard(BuildContext context, WidgetRef ref, WeeklyGesture g, String title, ColorScheme cs, Duration? timeLeft) {
     final notifier = ref.read(weeklyGesturesProvider.notifier);
+    final imagePath = gestureImageFor(g.title, g.category);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -102,15 +103,25 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Placeholder image area
-        Container(
+        SizedBox(
           height: 160,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.button, AppColors.icon],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+          width: double.infinity,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: imagePath.isEmpty
+                ? Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.button, AppColors.icon],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  )
+                : Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ),
         if (!g.completed && timeLeft != null)
