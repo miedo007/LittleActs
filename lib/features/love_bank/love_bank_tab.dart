@@ -134,7 +134,7 @@ class LoveBankTab extends ConsumerWidget {
 
 }
 
-enum _WeekStatus { past, completed, missed, upcoming }
+enum _WeekStatus { past, completed, missed, upcoming, current }
 
 class _Heatmap52 extends StatelessWidget {
   final List<WeeklyGesture> gestures;
@@ -179,12 +179,15 @@ class _Heatmap52 extends StatelessWidget {
           return const Color(0xFFDAD7D0);
         case _WeekStatus.upcoming:
           return const Color(0xFFF3EFE8);
+        case _WeekStatus.current:
+          return Colors.white;
       }
     }
 
     _WeekStatus statusFor(DateTime ws) {
       if (ws.isBefore(joinWeek)) return _WeekStatus.past;
       if (ws.isAfter(currentWeek)) return _WeekStatus.upcoming;
+      if (ws == currentWeek) return _WeekStatus.current;
       if (completedWeeks.contains(ws)) return _WeekStatus.completed;
       return _WeekStatus.missed;
     }
@@ -199,6 +202,7 @@ class _Heatmap52 extends StatelessWidget {
 
       Widget buildMonth(int year, int month) {
         final weeks = weeksInMonth(year, month);
+        final outlineColor = Theme.of(context).colorScheme.primary;
         return SizedBox(
           width: monthWidth,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -209,14 +213,14 @@ class _Heatmap52 extends StatelessWidget {
             const SizedBox(height: 6),
             Row(children: [
               for (int i = 0; i < weeks.length; i++) ...[
-                Container(
-                  width: dotSize,
-                  height: dotSize,
-                  decoration: BoxDecoration(
-                    color: colorFor(statusFor(weeks[i])),
-                    borderRadius: BorderRadius.circular(dotSize / 2),
-                  ),
-                ),
+                () {
+                  final status = statusFor(weeks[i]);
+                  return _WeekDot(
+                    size: dotSize,
+                    color: colorFor(status),
+                    outline: status == _WeekStatus.current ? Border.all(color: outlineColor, width: 2) : null,
+                  );
+                }(),
                 if (i != weeks.length - 1) const SizedBox(width: dotGap),
               ]
             ])
@@ -250,6 +254,15 @@ class _Heatmap52 extends StatelessWidget {
               _legendEntry(context, legendBox(colorFor(_WeekStatus.completed)), 'Completed'),
               _legendEntry(context, legendBox(colorFor(_WeekStatus.missed)), 'Missed'),
               _legendEntry(context, legendBox(colorFor(_WeekStatus.upcoming)), 'Upcoming'),
+              _legendEntry(
+                context,
+                _WeekDot(
+                  size: 14,
+                  color: Colors.white,
+                  outline: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
+                ),
+                'Current Week',
+              ),
             ],
           )
         ],
@@ -266,6 +279,26 @@ class _Heatmap52 extends StatelessWidget {
       const SizedBox(width: 6),
       Text(label, style: textStyle),
     ]);
+  }
+}
+
+class _WeekDot extends StatelessWidget {
+  final double size;
+  final Color color;
+  final BoxBorder? outline;
+  const _WeekDot({required this.size, required this.color, this.outline});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(size / 2),
+        border: outline,
+      ),
+    );
   }
 }
 

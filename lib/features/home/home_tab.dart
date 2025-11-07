@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +18,8 @@ class HomeTab extends ConsumerStatefulWidget {
 class _HomeTabState extends ConsumerState<HomeTab> {
   bool _ensuredBonus = false;
   late Future<int> _refreshesLeftFuture;
+  Timer? _countdownTimer;
+  Duration? _timeLeft;
 
   @override
   void initState() {
@@ -30,6 +34,14 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     // Memoize refresh count to avoid creating a new Future every rebuild
     _refreshesLeftFuture =
         ref.read(weeklyGesturesProvider.notifier).refreshesLeftForCurrentWeek();
+    _updateTimeLeft();
+    _countdownTimer = Timer.periodic(const Duration(minutes: 1), (_) => _updateTimeLeft());
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -60,7 +72,10 @@ class _HomeTabState extends ConsumerState<HomeTab> {
           _streakBanner(context, streak),
           const SizedBox(height: 12),
         ],
-        _actCard(context, ref, current, title, cs),
+        Text("This Week's Little Act",
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: AppColors.title)),
+        const SizedBox(height: 8),
+        _actCard(context, ref, current, title, cs, _timeLeft),
         const SizedBox(height: 16),
         Text('Extra inspiration',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
@@ -76,7 +91,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _actCard(BuildContext context, WidgetRef ref, WeeklyGesture g, String title, ColorScheme cs) {
+  Widget _actCard(BuildContext context, WidgetRef ref, WeeklyGesture g, String title, ColorScheme cs, Duration? timeLeft) {
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     return Container(
       decoration: BoxDecoration(
@@ -149,6 +164,22 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             const SizedBox(height: 6),
             if (g.category.isNotEmpty)
               _categoryTag(context, g.category),
+            if (!g.completed && timeLeft != null) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.hourglass_bottom_rounded, size: 16, color: AppColors.icon),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Time left: ${_formatTimeLeft(timeLeft)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(color: AppColors.bodyMuted, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ],
             Text(
               (g.description != null && g.description!.isNotEmpty) ? g.description! : _descFor(g),
               style: Theme.of(context)
@@ -351,5 +382,35 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       return 'Share genuine words of appreciation to brighten their day.';
     }
     return "Start their day with a warm surprise that shows you’re thinking of them.";
+  }
+
+  void _updateTimeLeft() {
+    final notifier = ref.read(weeklyGesturesProvider.notifier);
+    final current = notifier.currentWeek();
+    if (current.id.isEmpty) {
+      if (mounted) {
+        setState(() => _timeLeft = null);
+      }
+      return;
+    }
+    final weekEnd = current.weekStart.add(const Duration(days: 7));
+    final remaining = weekEnd.difference(DateTime.now());
+    final normalized = remaining.isNegative ? Duration.zero : remaining;
+    if (!mounted) return;
+    setState(() => _timeLeft = normalized);
+  }
+
+  String _formatTimeLeft(Duration duration) {
+    if (duration.inSeconds <= 0) return 'Week wrapping up soon';
+    final days = duration.inDays;
+    final hours = duration.inHours % 24;
+    final minutes = duration.inMinutes % 60;
+    if (days > 0) {
+      return '$days day${days == 1 ? '' : 's'} ${hours}h left';
+    }
+    if (hours > 0) {
+      return '$hours hour${hours == 1 ? '' : 's'} ${minutes}m left';
+    }
+    return '$minutes min left';
   }
 }
