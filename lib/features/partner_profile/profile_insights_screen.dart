@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
+import 'package:nudge/shared/widgets/calm_background.dart';
 
 class ProfileInsightsScreen extends ConsumerWidget {
   const ProfileInsightsScreen({super.key});
@@ -30,16 +33,37 @@ class ProfileInsightsScreen extends ConsumerWidget {
       ..sort((a, b) => b.percent.compareTo(a.percent));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile Insights')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      body: CalmBackground(
+        padding: EdgeInsets.zero,
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24, top: 12),
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Profile Insights',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
+                ],
+              ),
+              const SizedBox(height: 16),
           if (partner != null) ...[
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(partner.name,
                         style: Theme.of(context)
@@ -50,6 +74,7 @@ class ProfileInsightsScreen extends ConsumerWidget {
                     if (partner.togetherSince != null)
                       Text(
                         _togetherFor(partner.togetherSince!),
+                        textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
@@ -94,7 +119,39 @@ class ProfileInsightsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-        ],
+            const SizedBox(height: 24),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      'Keep it up to date',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Edit partner basics or retake the quiz any time.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () => context.pushNamed('partnerProfile'),
+                      child: const Text('Edit Partner Details'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () => context.pushNamed('loveLanguageQuiz'),
+                      child: const Text('Retake Quiz'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ],
+          ),
+        ),
       ),
     );
   }

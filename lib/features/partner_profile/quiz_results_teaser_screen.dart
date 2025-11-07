@@ -50,6 +50,8 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
     };
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
       body: CalmBackground(
         decorative: true,
         child: LayoutBuilder(
@@ -61,8 +63,8 @@ class QuizResultsTeaserScreen extends ConsumerWidget {
                 children: [
                 Center(
                   child: Text(
-                    'Your Results Are In!',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    'Results Are In!',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -151,8 +153,8 @@ class _PrimaryCard extends StatelessWidget {
     final screenW = MediaQuery.of(context).size.width;
     final size = screenW - 64; // leave horizontal padding
     // another ~10% smaller
-    final double ringSize = ((size * 0.40).clamp(150.0, 240.0)).toDouble();
-    final double stroke = ((ringSize * 0.10).clamp(16.0, 26.0)).toDouble();
+    final double ringSize = ((size * 0.35).clamp(150.0, 240.0)).toDouble();
+    final double stroke = ((ringSize * 0.10).clamp(14.0, 24.0)).toDouble();
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -184,7 +186,7 @@ class _PrimaryCard extends StatelessWidget {
                   height: ringSize,
                   child: TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: (percent.clamp(0, 100)) / 100.0),
-                    duration: const Duration(milliseconds: 900),
+                    duration: const Duration(milliseconds: 1300),
                     curve: Curves.easeOutCubic,
                     builder: (context, value, _) => CircularProgressIndicator(
                       value: value,
@@ -204,7 +206,10 @@ class _PrimaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             label,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.w800, color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -303,6 +308,3 @@ class _FadeSlideInState extends State<_FadeSlideIn> with SingleTickerProviderSta
     );
   }
 }
-
-
-

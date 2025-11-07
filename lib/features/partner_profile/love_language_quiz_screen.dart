@@ -91,16 +91,30 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
               ),
             ),
             const SizedBox(height: 12),
+            const SizedBox(height: 8),
             if (!_finalizing)
-              _QuestionCard(
-                number: (index + 1).clamp(1, _questions.length),
-                total: _questions.length,
-                q: _questions[index],
-                onA: () => _answer(true),
-                onB: () => _answer(false),
+              Expanded(
+                child: _QuestionCard(
+                  number: (index + 1).clamp(1, _questions.length),
+                  total: _questions.length,
+                  q: _questions[index],
+                  onA: () => _answer(true),
+                  onB: () => _answer(false),
+                ),
               )
             else
               const Expanded(child: Center(child: CircularProgressIndicator())),
+            Padding(
+              padding: const EdgeInsets.only(top: 12, left: 8, right: 8, bottom: 12),
+              child: Text(
+                'You can always retake this quiz later.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ),
           ],
         ),
       ),
@@ -162,30 +176,51 @@ class _QuestionCard extends StatelessWidget {
   final _Q q;
   final VoidCallback onA;
   final VoidCallback onB;
-  const _QuestionCard({required this.number, required this.total, required this.q, required this.onA, required this.onB});
+  const _QuestionCard({
+    required this.number,
+    required this.total,
+    required this.q,
+    required this.onA,
+    required this.onB,
+  });
+
+  static const double _questionHeight = 130;
+  static const double _choiceHeight = 120;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: _questionHeight,
+              child: Align(
+                alignment: Alignment.centerLeft,
+              child: Text(
                 q.title,
-                textAlign: TextAlign.left,
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                      color: AppColors.title,
+                    ),
               ),
-              const SizedBox(height: 20),
-              _ChoiceTile(text: q.a, onTap: onA),
-              const SizedBox(height: 14),
-              _ChoiceTile(text: q.b, onTap: onB),
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: _choiceHeight,
+              child: _ChoiceTile(text: q.a, onTap: onA),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: _choiceHeight,
+              child: _ChoiceTile(text: q.b, onTap: onB),
+            ),
+          ],
         ),
       ),
     );
@@ -210,17 +245,16 @@ class _ChoiceTile extends StatelessWidget {
           color: Colors.white,
           border: Border.all(color: cs.outlineVariant),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: 2),
-            Expanded(
-              child: Text(
-                text,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
+                  color: AppColors.title,
+                ),
+          ),
         ),
       ),
     );

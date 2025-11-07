@@ -21,6 +21,8 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   DateTime? _birthday;
   DateTime? _togetherSince;
   int _step = 0;
+  bool _birthdayMissing = false;
+  bool _togetherSinceMissing = false;
 
   @override
   void initState() {
@@ -167,6 +169,17 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                   onPressed: () async {
                     if (_step == 1) {
                       if (!_formKey.currentState!.validate()) return;
+                      if (_birthday == null || _togetherSince == null) {
+                        setState(() {
+                          _birthdayMissing = _birthday == null;
+                          _togetherSinceMissing = _togetherSince == null;
+                        });
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please add their birthday and when you started dating.')),
+                        );
+                        return;
+                      }
                     }
                     final current = ref.read(partnerProvider);
                     final updated = Partner(
@@ -189,7 +202,11 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                     );
                     await ref.read(partnerProvider.notifier).savePartner(updated);
                     if (!mounted) return;
-                    context.goNamed('loveLanguageQuiz');
+                    if (current == null) {
+                      context.goNamed('loveLanguageQuiz');
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
                   },
                   child: const Text('Continue', style: TextStyle(color: Colors.white)),
                 ),
@@ -280,17 +297,22 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
     final loc = MaterialLocalizations.of(context);
     String fmt(DateTime? d) => d == null ? 'Select a date' : loc.formatMediumDate(d);
 
-    Future<void> pickBirthday() async {
-      final now = DateTime.now();
-      final initial = _birthday ?? DateTime(now.year - 25, now.month, now.day);
-      final picked = await showDatePicker(
-        context: context,
-        initialDate: initial,
-        firstDate: DateTime(1900),
-        lastDate: now,
-      );
-      if (picked != null) setState(() => _birthday = picked);
+  Future<void> pickBirthday() async {
+    final now = DateTime.now();
+    final initial = _birthday ?? DateTime(now.year - 25, now.month, now.day);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1900),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        _birthday = picked;
+        _birthdayMissing = false;
+      });
     }
+  }
 
     Future<void> pickTogetherSince() async {
       final now = DateTime.now();
@@ -301,15 +323,26 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
         firstDate: DateTime(1990),
         lastDate: now,
       );
-      if (picked != null) setState(() => _togetherSince = picked);
+    if (picked != null) {
+      setState(() {
+        _togetherSince = picked;
+        _togetherSinceMissing = false;
+      });
     }
+  }
 
-    Widget dateField({required String label, required String value, required IconData icon, required VoidCallback onTap}) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+  Widget dateField({
+    required String label,
+    required String value,
+    required IconData icon,
+    required VoidCallback onTap,
+    String? error,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
           InkWell(
             borderRadius: BorderRadius.circular(22),
             onTap: onTap,
@@ -335,6 +368,10 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
               ),
             ),
           ),
+          if (error != null) ...[
+            const SizedBox(height: 6),
+            Text(error, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.redAccent)),
+          ],
         ],
       );
     }
@@ -347,6 +384,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
           value: fmt(_birthday),
           icon: Icons.calendar_today_rounded,
           onTap: pickBirthday,
+          error: _birthdayMissing ? 'Birthday is required' : null,
         ),
         const SizedBox(height: 16),
         dateField(
@@ -354,6 +392,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
           value: fmt(_togetherSince),
           icon: Icons.event_rounded,
           onTap: pickTogetherSince,
+          error: _togetherSinceMissing ? 'Dating start date is required' : null,
         ),
       ],
     );
