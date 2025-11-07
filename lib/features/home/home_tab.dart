@@ -49,6 +49,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     final gestures = ref.watch(weeklyGesturesProvider);
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final current = notifier.currentWeek();
+    final nextPreview = notifier.previewNextWeek();
     final hasCompleted = gestures.any((g) => g.completed);
     WeeklyGesture? bonus;
     if (current.id.isNotEmpty) {
@@ -86,7 +87,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         else
           _bonusCard(context, ref, bonus),
         const SizedBox(height: 16),
-        _upNextWeekCard(context, ref),
+        _upNextWeekCard(context, nextPreview),
       ],
     );
   }
@@ -315,8 +316,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
   }
 
   // Up Next preview card (next week's act)
-  Widget _upNextWeekCard(BuildContext context, WidgetRef ref) {
+  Widget _upNextWeekCard(BuildContext context, WeeklyGesture next) {
     final cs = Theme.of(context).colorScheme;
+    final previewImage = gestureImageFor(next.title, next.category);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -333,10 +335,13 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                     .labelLarge
                     ?.copyWith(color: cs.primary, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
-            Text('A Shared Memory Moment',
+            Text(next.title.isEmpty ? 'Another thoughtful act' : next.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
-            Text("Get ready for next week's act to strengthen your connection.",
+            Text(
+                (next.description != null && next.description!.isNotEmpty)
+                    ? next.description!
+                    : "Get ready for next week's act to strengthen your connection.",
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
           ]),
         ),
@@ -344,15 +349,15 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFCBB8), Color(0xFFFFF2EC)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+            width: 72,
+            height: 72,
+            color: AppColors.frameOutline.withOpacity(0.2),
+            child: previewImage.isEmpty
+                ? const SizedBox.shrink()
+                : Image.asset(
+                    previewImage,
+                    fit: BoxFit.cover,
+                  ),
           ),
         )
       ]),

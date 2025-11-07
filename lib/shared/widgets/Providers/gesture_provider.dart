@@ -777,6 +777,22 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     return best;
   }
 
+  WeeklyGesture previewNextWeek() {
+    final nextStart = _startOfWeek(DateTime.now().add(const Duration(days: 7)));
+    final existingIndex = state.indexWhere((g) => g.weekStart == nextStart);
+    WeeklyGesture next;
+    if (existingIndex >= 0) {
+      next = state[existingIndex];
+    } else {
+      next = _generateGesture(_ref.read(partnerProvider), nextStart);
+    }
+    final desc = _gestureDescriptions[next.title];
+    if ((next.description == null || next.description!.isEmpty) && desc != null) {
+      next = next.copyWith(description: desc);
+    }
+    return next;
+  }
+
   Future<void> _scheduleNotifications() async {
     if (!_ref.read(premiumProvider)) return;
     final partner = _ref.read(partnerProvider);
