@@ -1,20 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/style/palette.dart';
 import 'package:nudge/models/milestone.dart';
 
-class PartnerSummaryTab extends ConsumerWidget {
+class PartnerSummaryTab extends ConsumerStatefulWidget {
   const PartnerSummaryTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PartnerSummaryTab> createState() => _PartnerSummaryTabState();
+}
+
+class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final partner = ref.watch(partnerProvider);
     final cs = Theme.of(context).colorScheme;
 
@@ -67,11 +79,18 @@ class PartnerSummaryTab extends ConsumerWidget {
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  '${_possessive(partner.name)} profile',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: _AvatarSection(
+                        partner: partner,
+                        onChangePhoto: () => _pickPhoto(context, partner),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${_possessive(partner.name)} profile',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -125,7 +144,7 @@ class PartnerSummaryTab extends ConsumerWidget {
         const SizedBox(height: 12),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -242,6 +261,87 @@ class PartnerSummaryTab extends ConsumerWidget {
 
   Widget _chip(BuildContext context, String text) {
     return Chip(label: Text(text));
+  }
+
+  Future<void> _pickPhoto(BuildContext context, Partner partner) async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1080,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final dir = await getApplicationDocumentsDirectory();
+    final newPath =
+        '${dir.path}/partner_photo_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    try {
+      await File(picked.path).copy(newPath);
+      if (!mounted) return;
+      final notifier = ref.read(partnerProvider.notifier);
+      await notifier.savePartner(partner.copyWith(photoPath: newPath));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Photo updated')));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update photo')),
+      );
+    }
+  }
+}
+
+class _AvatarSection extends StatelessWidget {
+  final Partner partner;
+  final VoidCallback onChangePhoto;
+  const _AvatarSection({required this.partner, required this.onChangePhoto});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto = partner.photoPath != null &&
+        partner.photoPath!.isNotEmpty &&
+        File(partner.photoPath!).existsSync();
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        CircleAvatar(
+          radius: 56,
+          backgroundColor: AppColors.frameOutline.withOpacity(0.3),
+          backgroundImage:
+              hasPhoto ? FileImage(File(partner.photoPath!)) : null,
+          child: hasPhoto
+              ? null
+              : const Icon(Icons.person, size: 36, color: AppColors.icon),
+        ),
+        Positioned(
+          bottom: 4,
+          right: 4,
+          child: InkWell(
+            onTap: onChangePhoto,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.frameOutline),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Icon(
+                hasPhoto ? Icons.edit_rounded : Icons.add_a_photo_rounded,
+                size: 16,
+                color: AppColors.icon,
+              ),
+            ),
+          ),
+        )
+      ],
+    );
   }
 }
 

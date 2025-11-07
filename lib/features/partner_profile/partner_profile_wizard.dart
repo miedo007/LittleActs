@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
@@ -18,12 +22,14 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
   final _nameController = TextEditingController();
   final FocusNode _nameFocus = FocusNode();
   final _customGenderController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
   String? _gender;
   DateTime? _birthday;
   DateTime? _togetherSince;
   int _step = 0;
   bool _birthdayMissing = false;
   bool _togetherSinceMissing = false;
+  String? _photoPath;
 
   @override
   void initState() {
@@ -34,6 +40,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
       _gender = p.gender;
       _birthday = p.birthday;
       _togetherSince = p.togetherSince;
+      _photoPath = p.photoPath;
     }
   }
 
@@ -91,6 +98,8 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                                       ),
                                       const SizedBox(height: 20),
                                       if (_step == 1) ...[
+                                        _photoPicker(context),
+                                        const SizedBox(height: 16),
                                         TextFormField(
                                           controller: _nameController,
                                           focusNode: _nameFocus,
@@ -194,6 +203,7 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
                           : (_gender ?? current?.gender),
                       birthday: _birthday ?? current?.birthday,
                       togetherSince: _togetherSince ?? current?.togetherSince,
+                      photoPath: _photoPath ?? current?.photoPath,
                       qualityTime: current?.qualityTime,
                       wordsOfAffirmation: current?.wordsOfAffirmation,
                       actsOfService: current?.actsOfService,
@@ -405,6 +415,59 @@ class _PartnerProfileScreenState extends ConsumerState<PartnerProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _photoPicker(BuildContext context) {
+    final hasPhoto = _photoPath != null &&
+        _photoPath!.isNotEmpty &&
+        File(_photoPath!).existsSync();
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickPhoto,
+          child: CircleAvatar(
+            radius: 56,
+            backgroundColor: AppColors.frameOutline.withOpacity(0.3),
+            backgroundImage: hasPhoto ? FileImage(File(_photoPath!)) : null,
+            child: hasPhoto
+                ? null
+                : const Icon(Icons.camera_alt_rounded,
+                    size: 32, color: AppColors.icon),
+          ),
+        ),
+        TextButton(
+          onPressed: _pickPhoto,
+          child: Text(hasPhoto ? 'Change photo' : 'Add photo'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickPhoto() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1080,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final dir = await getApplicationDocumentsDirectory();
+    final newPath =
+        '${dir.path}/partner_photo_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    try {
+      await File(picked.path).copy(newPath);
+      if (!mounted) return;
+      setState(() {
+        _deleteLocalPhoto(_photoPath);
+        _photoPath = newPath;
+      });
+    } catch (_) {}
+  }
+
+  void _deleteLocalPhoto(String? path) {
+    if (path == null) return;
+    try {
+      File(path).deleteSync();
+    } catch (_) {}
   }
 }
 

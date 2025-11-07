@@ -58,6 +58,7 @@ class PartnerNotifier extends StateNotifier<Partner?> {
       birthday: partner.birthday ?? existing?.birthday,
       togetherSince: partner.togetherSince ?? existing?.togetherSince,
       gender: partner.gender ?? existing?.gender,
+      photoPath: partner.photoPath ?? existing?.photoPath,
       loveLanguagePrimary: partner.loveLanguagePrimary ?? existing?.loveLanguagePrimary,
       loveLanguageSecondary: partner.loveLanguageSecondary ?? existing?.loveLanguageSecondary,
       favorites: partner.favorites ?? existing?.favorites,

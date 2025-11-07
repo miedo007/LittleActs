@@ -8,6 +8,7 @@ class Partner {
   final String? favorites;
   final String? dislikes;
   final String? budget;
+  final String? photoPath;
   // Love language ratings: 0–5
   final int? qualityTime;
   final int? wordsOfAffirmation;
@@ -25,6 +26,7 @@ class Partner {
     this.favorites,
     this.dislikes,
     this.budget,
+    this.photoPath,
     this.qualityTime,
     this.wordsOfAffirmation,
     this.actsOfService,
@@ -42,6 +44,7 @@ class Partner {
         'favorites': favorites,
         'dislikes': dislikes,
         'budget': budget,
+        'photoPath': photoPath,
         'qualityTime': qualityTime,
         'wordsOfAffirmation': wordsOfAffirmation,
         'actsOfService': actsOfService,
@@ -63,6 +66,7 @@ class Partner {
         favorites: json['favorites'],
         dislikes: json['dislikes'],
         budget: json['budget'],
+        photoPath: json['photoPath'],
         qualityTime: json['qualityTime'],
         wordsOfAffirmation: json['wordsOfAffirmation'],
         actsOfService: json['actsOfService'],
@@ -82,6 +86,7 @@ extension PartnerCopyExt on Partner {
     String? favorites,
     String? dislikes,
     String? budget,
+    String? photoPath,
     int? qualityTime,
     int? wordsOfAffirmation,
     int? actsOfService,
@@ -98,6 +103,7 @@ extension PartnerCopyExt on Partner {
       favorites: favorites ?? this.favorites,
       dislikes: dislikes ?? this.dislikes,
       budget: budget ?? this.budget,
+      photoPath: photoPath ?? this.photoPath,
       qualityTime: qualityTime ?? this.qualityTime,
       wordsOfAffirmation: wordsOfAffirmation ?? this.wordsOfAffirmation,
       actsOfService: actsOfService ?? this.actsOfService,
