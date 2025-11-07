@@ -43,20 +43,37 @@ class LoveBankTab extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Row(children: [
-          _metricCard(context, 'Total Acts', totalActs.toString()),
+          _metricCard(context, 'Total Acts', totalActs.toString(), flame: false),
           const SizedBox(width: 12),
-          _metricCard(context, 'Longest Streak', '$longest'),
+          _metricCard(context, 'Longest Streak', '$longest', flame: true),
         ]),
-        const SizedBox(height: 16),
-        RepaintBoundary(
-          child: _Heatmap52(
-            dates: completed.map((e) => e.completedAt ?? e.weekStart).toList(),
+        const SizedBox(height: 20),
+        Text(
+          'Your Year In Review',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: RepaintBoundary(
+              child: _Heatmap52(
+                dates: completed.map((e) => e.completedAt ?? e.weekStart).toList(),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'Last thoughtful moments',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          'Last Thoughtful Moments',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         for (final g in completed.take(5))
@@ -111,8 +128,6 @@ class _Heatmap52 extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
-    const weeks = 52;
-
     DateTime startOfWeek(DateTime d) {
       final base = DateTime(d.year, d.month, d.day);
       final weekday = base.weekday % 7; // Sunday => 0
@@ -185,15 +200,16 @@ class _Heatmap52 extends StatelessWidget {
       Widget legendBox(Color color) => Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)));
 
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Wrap(
+            alignment: WrapAlignment.center,
             spacing: monthGap,
             runSpacing: 12,
             children: months,
           ),
           const SizedBox(height: 12),
-          Row(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             legendBox(cs.outlineVariant.withOpacity(0.35)),
             const SizedBox(width: 6),
             Text('Incomplete', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
@@ -228,7 +244,7 @@ Color _loveColor(BuildContext context, String category) {
   }
 }
  
-Widget _metricCard(BuildContext context, String label, String value) {
+Widget _metricCard(BuildContext context, String label, String value, {bool flame = false}) {
   return Expanded(
     child: Container(
       padding: const EdgeInsets.all(14),
@@ -236,9 +252,9 @@ Widget _metricCard(BuildContext context, String label, String value) {
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: 8),
-        Text('🔥 $value',
+        Text('${flame ? '🔥 ' : ''}$value',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
       ]),
     ),
   );

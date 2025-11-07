@@ -589,13 +589,17 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
 
     final main = currentWeek();
     final partner = _ref.read(partnerProvider);
-    final seed = DateTime.now().add(const Duration(minutes: 3));
-    var suggestion = _generateGesture(partner, seed);
-    suggestion = suggestion.copyWith(
-      id: bonusId,
-      weekStart: ws,
-      category: main.category.isNotEmpty ? main.category : suggestion.category,
-    );
+    DateTime seed = DateTime.now().add(const Duration(minutes: 3));
+    WeeklyGesture suggestion;
+    int attempts = 0;
+    do {
+      suggestion = _generateGesture(partner, seed);
+      seed = seed.add(const Duration(minutes: 1));
+      attempts++;
+    } while (main.category.isNotEmpty &&
+        suggestion.category == main.category &&
+        attempts < 6);
+    suggestion = suggestion.copyWith(id: bonusId, weekStart: ws);
     state = [...state, suggestion];
     await _save();
   }

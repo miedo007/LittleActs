@@ -43,6 +43,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       final idx = gestures.indexWhere((g) => g.id == id);
       if (idx >= 0) bonus = gestures[idx];
     }
+    if (bonus != null && bonus!.title == current.title) {
+      bonus = null;
+    }
     // Bonus generation is triggered once in initState; avoid per-build scheduling.
 
     final cs = Theme.of(context).colorScheme;
@@ -52,7 +55,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Settings button removed; use Account tab instead
+        _streakBanner(context, streak),
+        const SizedBox(height: 12),
         _actCard(context, ref, current, title, cs),
         const SizedBox(height: 16),
         Text('Extra inspiration',
@@ -63,15 +67,6 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant))
         else
           _bonusCard(context, ref, bonus),
-        const SizedBox(height: 16),
-        Text('Weekly Streak',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Row(children: [
-          _metric(context, 'Streak', streak.toString()),
-          const SizedBox(width: 12),
-          _metric(context, 'Completed acts', notifier.completedActs().length.toString()),
-        ]),
         const SizedBox(height: 16),
         _upNextWeekCard(context, ref),
       ],
@@ -219,20 +214,26 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _metric(BuildContext context, String label, String value) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white,
-          border: Border.all(color: AppColors.frameOutline),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: Theme.of(context).textTheme.labelMedium),
-          const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-        ]),
+  Widget _streakBanner(BuildContext context, int streak) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: AppColors.button,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Current streak',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '🔥 $streak week${streak == 1 ? '' : 's'}',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
+          ),
+        ],
       ),
     );
   }
