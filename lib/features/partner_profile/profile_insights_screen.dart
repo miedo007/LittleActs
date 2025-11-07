@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:nudge/shared/style/palette.dart';
 
 class ProfileInsightsScreen extends ConsumerWidget {
   const ProfileInsightsScreen({super.key});
@@ -72,13 +73,26 @@ class ProfileInsightsScreen extends ConsumerWidget {
                             ?.copyWith(fontWeight: FontWeight.w800)),
                     const SizedBox(height: 6),
                     if (partner.togetherSince != null)
-                      Text(
-                        _togetherFor(partner.togetherSince!),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: cs.primary),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.favorite, color: AppColors.button),
+                              SizedBox(width: 6),
+                              Text('Together for', style: TextStyle(fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _togetherFor(partner.togetherSince!),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w800, color: cs.primary),
+                          ),
+                        ],
                       ),
                   ],
                 ),
@@ -181,5 +195,9 @@ String _togetherFor(DateTime since) {
     months += 12;
     years -= 1;
   }
-  return 'Together for $years years, $months months, $days days';
+  final parts = <String>[];
+  if (years > 0) parts.add('$years year${years == 1 ? '' : 's'}');
+  if (months > 0) parts.add('$months month${months == 1 ? '' : 's'}');
+  if (days > 0 || parts.isEmpty) parts.add('$days day${days == 1 ? '' : 's'}');
+  return parts.join(', ');
 }

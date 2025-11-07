@@ -5,6 +5,7 @@ import '../partner/partner_summary_tab.dart';
 import '../love_bank/love_bank_tab.dart';
 import '../account/account_tab.dart';
 import '../../shared/widgets/calm_background.dart';
+import '../../shared/style/palette.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -39,6 +40,8 @@ class _AppShellState extends State<AppShell> {
     ];
     _built.add(_index);
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
       body: CalmBackground(
         child: Stack(
           children: [
@@ -52,6 +55,16 @@ class _AppShellState extends State<AppShell> {
       ),
       bottomNavigationBar: Builder(builder: (context) {
         final cs = Theme.of(context).colorScheme;
+        final iconTheme = MaterialStateProperty.resolveWith<IconThemeData>(
+          (states) => states.contains(MaterialState.selected)
+              ? const IconThemeData(color: Colors.white)
+              : IconThemeData(color: cs.onSurfaceVariant),
+        );
+        final labelStyle = MaterialStateProperty.resolveWith<TextStyle>(
+          (states) => states.contains(MaterialState.selected)
+              ? TextStyle(color: AppColors.button, fontWeight: FontWeight.w700)
+              : TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500),
+        );
         return Container(
           decoration: BoxDecoration(
             color: Colors.transparent,
@@ -60,17 +73,19 @@ class _AppShellState extends State<AppShell> {
           child: NavigationBarTheme(
             data: NavigationBarThemeData(
               backgroundColor: Colors.transparent,
-              indicatorColor: cs.primary.withOpacity(0.12),
+              indicatorColor: AppColors.button,
               surfaceTintColor: Colors.transparent,
+              iconTheme: iconTheme,
+              labelTextStyle: labelStyle,
             ),
             child: NavigationBar(
               selectedIndex: _index,
               onDestinationSelected: (i) => setState(() => _index = i),
               destinations: const [
-                NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
-                NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Partner'),
-                NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'Love Bank'),
-                NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Account'),
+                NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_outlined), label: 'Home'),
+                NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people_outline), label: 'Partner'),
+                NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite_border), label: 'Love Bank'),
+                NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_outline), label: 'Account'),
               ],
             ),
           ),

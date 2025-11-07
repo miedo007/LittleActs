@@ -12,7 +12,6 @@ class LoveBankTab extends ConsumerWidget {
     final List<WeeklyGesture> gestures = ref.watch(weeklyGesturesProvider);
     final notifier = ref.read(weeklyGesturesProvider.notifier);
     final completed = notifier.completedActs();
-    final s = notifier.streak();
     final cs = Theme.of(context).colorScheme;
 
     if (completed.isEmpty) {
@@ -31,13 +30,18 @@ class LoveBankTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Love Bank', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+        Text(
+          'Love Bank',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
         const SizedBox(height: 4),
-        Text('Every small act adds up to something big \u2665',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-        const SizedBox(height: 8),
-        Row(children: [const Spacer(), _streakChip(context, s)]),
-        const SizedBox(height: 12),
+        Text(
+          'Every small act adds up to something big \u2665',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
         Row(children: [
           _metricCard(context, 'Total Acts', totalActs.toString()),
           const SizedBox(width: 12),
@@ -50,6 +54,11 @@ class LoveBankTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
+        Text(
+          'Last thoughtful moments',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
         for (final g in completed.take(5))
           Card(
             child: ListTile(
@@ -64,7 +73,7 @@ class LoveBankTab extends ConsumerWidget {
               ),
               trailing: Text(
                 g.category.toUpperCase(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: _loveColor(context, g.category)),
               ),
             ),
           ),
@@ -92,36 +101,6 @@ class LoveBankTab extends ConsumerWidget {
     }
   }
 
-  static String _emojiFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'gifts':
-        return '🎁';
-      case 'service':
-      case 'acts of service':
-        return '🍽️';
-      case 'time':
-      case 'quality time':
-        return '⏰';
-      case 'touch':
-        return '🤝';
-      case 'affirmation':
-        return '💐';
-      default:
-        return '💗';
-    }
-  }
-
-  Widget _streakChip(BuildContext context, int s) {
-    final cs = Theme.of(context).colorScheme;
-    return Chip(
-      avatar: Icon(Icons.local_fire_department_rounded, color: cs.primary),
-      label: Text('$s WEEK${s == 1 ? '' : 'S'}',
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600)),
-      side: BorderSide(color: cs.outlineVariant),
-      shape: const StadiumBorder(),
-      backgroundColor: Color.alphaBlend(cs.primary.withOpacity(0.06), Colors.white),
-    );
-  }
 }
 
 class _Heatmap52 extends StatelessWidget {
@@ -229,15 +208,37 @@ class _Heatmap52 extends StatelessWidget {
   }
 }
 
+Color _loveColor(BuildContext context, String category) {
+  switch (category.toLowerCase()) {
+    case 'words':
+    case 'affirmation':
+      return const Color(0xFF6C63FF);
+    case 'service':
+    case 'acts of service':
+      return const Color(0xFF00B894);
+    case 'touch':
+      return const Color(0xFFFF7675);
+    case 'gifts':
+      return const Color(0xFFFDCB6E);
+    case 'time':
+    case 'quality time':
+      return const Color(0xFF0984E3);
+    default:
+      return Theme.of(context).colorScheme.primary;
+  }
+}
+ 
 Widget _metricCard(BuildContext context, String label, String value) {
   return Expanded(
     child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
-        const SizedBox(height: 6),
-        Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Text('🔥 $value',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
       ]),
     ),
   );

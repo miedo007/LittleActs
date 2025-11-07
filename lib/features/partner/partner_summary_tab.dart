@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:nudge/models/partner.dart';
+import 'package:nudge/shared/style/palette.dart';
+import 'package:nudge/models/milestone.dart';
 
 class PartnerSummaryTab extends ConsumerWidget {
   const PartnerSummaryTab({super.key});
@@ -75,13 +77,26 @@ class PartnerSummaryTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 if (partner.togetherSince != null)
-                  Text(
-                    _togetherFor(partner.togetherSince!),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Theme.of(context).colorScheme.primary),
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.favorite, color: AppColors.button),
+                          SizedBox(width: 6),
+                          Text('Together for', style: TextStyle(fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _togetherFor(partner.togetherSince!),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ],
                   )
                 else
                   Center(
@@ -143,7 +158,10 @@ class PartnerSummaryTab extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Milestones', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Milestones',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
             TextButton.icon(
               style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
               onPressed: () => context.pushNamed('milestonePlanner'),
@@ -163,10 +181,58 @@ class PartnerSummaryTab extends ConsumerWidget {
           Column(
             children: [
               for (final m in milestones.take(3))
-                ListTile(
-                  leading: const Icon(Icons.event_rounded),
-                  title: Text(m.name),
-                  subtitle: Text('Next: ${DateFormat.yMMMMd().format(m.nextOccurrence())}'),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: cs.outlineVariant),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.event_rounded),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _titleFor(m, partner.name),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Next: ${DateFormat.yMMMMd().format(m.nextOccurrence())}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: cs.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.button.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.button),
+                        ),
+                        child: Text(
+                          _inDays(m.nextOccurrence()),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(color: AppColors.button, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
@@ -333,7 +399,11 @@ String _togetherFor(DateTime since) {
     months += 12;
     years -= 1;
   }
-  return 'Together for $years years, $months months, $days days';
+  final parts = <String>[];
+  if (years > 0) parts.add('$years year${years == 1 ? '' : 's'}');
+  if (months > 0) parts.add('$months month${months == 1 ? '' : 's'}');
+  if (days > 0 || parts.isEmpty) parts.add('$days day${days == 1 ? '' : 's'}');
+  return parts.join(', ');
 }
  
 String _possessive(String name) {
@@ -385,4 +455,22 @@ Future<DateTime?> _pickDateCupertino(
       ]),
     ),
   );
+}
+String _inDays(DateTime date) {
+  final now = DateTime.now();
+  final diff = date.difference(now).inDays;
+  if (diff == 0) return 'Today';
+  if (diff > 0) return 'In $diff d';
+  return '${diff.abs()}d ago';
+}
+
+String _titleFor(Milestone milestone, String partnerName) {
+  if (milestone.id == 'birthday') {
+    final first = partnerName.split(' ').first;
+    return "$first's Birthday";
+  }
+  if (milestone.id == 'anniversary') {
+    return 'Relationship Anniversary';
+  }
+  return milestone.name;
 }

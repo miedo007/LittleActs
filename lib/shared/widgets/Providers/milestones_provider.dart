@@ -35,7 +35,10 @@ class MilestonesNotifier extends StateNotifier<List<Milestone>> {
 
   // ---------- CRUD ----------
   Future<void> add(Milestone m) async {
-    state = [...state, m];
+    state = [
+      ...state.where((existing) => existing.id != m.id),
+      m,
+    ];
     await _save();
     await _reschedule();
   }
