@@ -40,6 +40,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonLabel =
+        _index == 0 ? 'Start' : (_index < 3 ? 'Continue' : 'Get Started');
     return Scaffold(
       body: Stack(
         children: [
@@ -50,34 +52,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             intensityDark: 0.30,
             child: Column(children: [
               Expanded(
-                child: PageView(
-                  controller: _controller,
-                  onPageChanged: (i) => setState(() => _index = i),
-                                    children: [
-                    _SplashPage(),
-                    _PerkPage(
-                      title: 'Love thrives on the little things',
-                      subtitle: "Research shows couples who stay strong respond to each other's small bids for connection far more often than those who don't.",
-                      icon: Icons.favorite_rounded,
-                      titleWeight: FontWeight.w800,
-                      highlightSubphrase: 'little things',
-                      highlightColor: Color(0xFFE98A39),
-                    ),
-                    _PerkPage(
-                      title: 'Life gets loud. Love gets crowded out.',
-                      subtitle: 'We forget dates. We miss chances. Not because we don\'t care — because our brains are full.',
-                      icon: Icons.cake_rounded,
-                      titleWeight: FontWeight.w900,
-                      highlightSubphrase: 'Love gets crowded out.',
-                      highlightColor: Color(0xFFDD5A54),
-                    ),
-                    _PerkPage(
-                      title: 'Small acts, repeated, change everything.',
-                      subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
-                      icon: Icons.auto_graph_rounded,
-                      titleWeight: FontWeight.w900,
-                      highlightSubphrase: 'change everything',
-                      highlightColor: Theme.of(context).colorScheme.primary,
+                child: Stack(
+                  children: [
+                    if (_index > 0)
+                      Positioned(
+                        top: -20,
+                        right: -55,
+                        child: IgnorePointer(
+                          ignoring: true,
+                          child: _FloatingBranch(asset: 'assets/branch.png', width: 360),
+                        ),
+                      ),
+                    PageView(
+                      controller: _controller,
+                      onPageChanged: (i) => setState(() => _index = i),
+                      children: [
+                        const _SplashPage(),
+                        _PerkPage(
+                          title: 'Love thrives on the little things',
+                          subtitle: "Research shows couples who stay strong respond to each other's small bids for connection far more often than those who don't.",
+                          icon: Icons.favorite_rounded,
+                          titleWeight: FontWeight.w800,
+                          highlightSubphrase: 'little things',
+                          highlightColor: const Color(0xFFE98A39),
+                        ),
+                        _PerkPage(
+                          title: 'Life gets loud. Love gets crowded out.',
+                          subtitle: 'We forget dates. We miss chances. Not because we don\'t care — because our brains are full.',
+                          icon: Icons.cake_rounded,
+                          titleWeight: FontWeight.w900,
+                          highlightSubphrase: 'Love gets crowded out.',
+                          highlightColor: const Color(0xFFDD5A54),
+                        ),
+                        _PerkPage(
+                          title: 'Small acts, repeated, change everything.',
+                          subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
+                          icon: Icons.auto_graph_rounded,
+                          titleWeight: FontWeight.w900,
+                          highlightSubphrase: 'change everything',
+                          highlightColor: Theme.of(context).colorScheme.primary,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -100,7 +115,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             if (!context.mounted) return;
                             context.goNamed('partnerProfile');
                           },
-                    child: Text(_index < 3 ? 'Start' : 'Get Started'),
+                    child: Text(buttonLabel),
                   ),
                 ),
               ]),
@@ -133,41 +148,30 @@ class _PerkPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -20,
-          right: -50,
-          child: IgnorePointer(
-            child: _FloatingBranch(asset: imageAsset ?? 'assets/branch.png', width: 340),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 60, left: 20, right: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTitle(context),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: Text(
-                    subtitle,
-                    textAlign: TextAlign.left,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: AppColors.title, fontSize: 18, height: 1.45, fontWeight: FontWeight.w400),
-                  ),
-                ),
-              ],
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 60, left: 20, right: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTitle(context),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.left,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(color: AppColors.title, fontSize: 18, height: 1.45, fontWeight: FontWeight.w400),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -441,17 +445,6 @@ class _Dots extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
