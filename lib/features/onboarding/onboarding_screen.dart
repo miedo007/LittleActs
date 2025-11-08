@@ -14,6 +14,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  static const int _totalPages = 5;
   final PageController _controller = PageController();
   int _index = 0;
   @override
@@ -28,7 +29,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _next() {
-    if (_index < 3) {
+    if (_index < _totalPages - 1) {
       _controller.nextPage(duration: const Duration(milliseconds: 260), curve: Curves.easeOut);
     }
   }
@@ -42,7 +43,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final buttonLabel =
-        _index == 0 ? 'Start' : (_index < 3 ? 'Continue' : 'Get Started');
+        _index == 0 ? 'Start' : (_index < _totalPages - 1 ? 'Continue' : 'Get Started');
     return Scaffold(
       body: Stack(
         children: [
@@ -70,28 +71,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       children: [
                         const _SplashPage(),
                         _PerkPage(
-                          title: 'Love thrives on the little things',
-                          subtitle: "Research shows couples who stay strong respond to each other's small bids for connection far more often than those who don't.",
+                          title: 'Love grows on the little things',
+                          subtitle:
+                              "Real connection isn’t built on grand gestures, it’s the tiny, everyday moments that matter most.",
                           icon: Icons.favorite_rounded,
-                          titleWeight: FontWeight.w800,
+                          titleWeight: FontWeight.w900,
                           highlightSubphrase: 'little things',
                           highlightColor: const Color(0xFFE98A39),
                         ),
                         _PerkPage(
-                          title: 'Life gets loud. Love gets crowded out.',
-                          subtitle: 'We forget dates. We miss chances. Not because we don\'t care — because our brains are full.',
+                          title: 'Life gets loud. Love gets lost in the noise.',
+                          subtitle:
+                              'We forget dates and miss chances, not because we don’t care, but because our minds are full.',
                           icon: Icons.cake_rounded,
                           titleWeight: FontWeight.w900,
-                          highlightSubphrase: 'Love gets crowded out.',
+                          highlightSubphrase: 'Life gets loud.',
                           highlightColor: const Color(0xFFDD5A54),
                         ),
                         _PerkPage(
                           title: 'Small acts, repeated, change everything.',
-                          subtitle: 'Tiny kindnesses boost happiness for both giver and receiver and most of us underestimate their impact.',
+                          subtitle:
+                              'Tiny kindnesses boost happiness for both giver and receiver—and most of us underestimate their impact.',
                           icon: Icons.auto_graph_rounded,
                           titleWeight: FontWeight.w900,
                           highlightSubphrase: 'change everything',
-                          highlightColor: Theme.of(context).colorScheme.primary,
+                          highlightColor: const Color(0xFF0B6B4B),
+                        ),
+                        _PerkPage(
+                          title: 'One thoughtful act, every week, done for you.',
+                          subtitle:
+                              'Personalized gestures, gentle reminders, and shared moments to keep your love effortless.',
+                          icon: Icons.auto_awesome_rounded,
+                          titleWeight: FontWeight.w900,
+                          highlightSubphrase: 'every week',
+                          highlightColor: const Color(0xFF2D7BE0),
                         ),
                       ],
                     ),
@@ -99,7 +112,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _Dots(index: _index, count: 4, activeColor: AppColors.button),
+              _Dots(index: _index, count: _totalPages, activeColor: AppColors.button),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
@@ -110,7 +123,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       backgroundColor: AppColors.button,
                       textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                     ),
-                    onPressed: _index < 3
+                    onPressed: _index < _totalPages - 1
                         ? () {
                             HapticFeedback.mediumImpact();
                             _next();
@@ -450,7 +463,6 @@ class _Dots extends StatelessWidget {
     );
   }
 }
-
 
 
 
