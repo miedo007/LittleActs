@@ -376,28 +376,58 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
   }
 
   // ---------- Generation Rules (with Premium gating) ----------
-  WeeklyGesture _generateGesture(Partner? partner, DateTime weekStart) {
-    final isPro = _ref.read(premiumProvider);
-
-    final fav = partner?.favorites?.trim();
-    // Prefer ratings if present; fallback to primary string.
-    String primary;
+  String _primaryLoveCode(Partner? partner) {
+    final p = partner;
+    if (p == null) return '';
     final ratings = <String, int>{
-      'service': partner?.actsOfService ?? -1,
-      'time': partner?.qualityTime ?? -1,
-      'words': partner?.wordsOfAffirmation ?? -1,
-      'touch': partner?.physicalTouch ?? -1,
-      'gift': partner?.receivingGifts ?? -1,
+      'service': p.actsOfService ?? -1,
+      'time': p.qualityTime ?? -1,
+      'words': p.wordsOfAffirmation ?? -1,
+      'touch': p.physicalTouch ?? -1,
+      'gift': p.receivingGifts ?? -1,
     };
     if (ratings.values.any((v) => v >= 0)) {
       final sorted = ratings.entries
-          .where((e) => e.value > 0)
+          .where((e) => e.value >= 0)
           .toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      primary = sorted.isNotEmpty ? sorted.first.key : '';
-    } else {
-      primary = (partner?.loveLanguagePrimary ?? '').toLowerCase();
+      if (sorted.isNotEmpty) return sorted.first.key;
     }
+    final primaryText = (p.loveLanguagePrimary ?? '').toLowerCase();
+    if (primaryText.contains('service')) return 'service';
+    if (primaryText.contains('time')) return 'time';
+    if (primaryText.contains('gift')) return 'gift';
+    if (primaryText.contains('touch')) return 'touch';
+    if (primaryText.contains('word')) return 'words';
+    return '';
+  }
+
+  Future<void> alignFirstActWithPrimary() async {
+    await _ensureThisWeekGesture();
+    final partner = _ref.read(partnerProvider);
+    final target = _primaryLoveCode(partner);
+    if (target.isEmpty) return;
+    final ws = _startOfWeek(DateTime.now());
+    final hasPastWeeks = state.any((g) => g.weekStart.isBefore(ws));
+    if (hasPastWeeks) return;
+    final current = currentWeek();
+    if (current.id.isEmpty || current.completed || current.category == target) return;
+
+    final updated =
+        _generateGesture(partner, current.weekStart, forcedCategory: target);
+    state = [
+      for (final g in state)
+        if (g.id == current.id) updated else g,
+    ];
+    await _save();
+  }
+
+  WeeklyGesture _generateGesture(Partner? partner, DateTime weekStart,
+      {String? forcedCategory}) {
+    final isPro = _ref.read(premiumProvider);
+
+    final fav = partner?.favorites?.trim();
+    final primary = _primaryLoveCode(partner);
 
     // Titles (20) per category, aligned with description maps below.
     const service = [
@@ -636,8 +666,10 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     final ordered = <dynamic>{...byLove, ...diversity}.toList();
 
     String category;
-    // For the first ever gesture we create, force primary love language
-    if (state.isEmpty && byLove.isNotEmpty) {
+    if (forcedCategory != null && forcedCategory.isNotEmpty) {
+      category = forcedCategory;
+    } else if (state.isEmpty && byLove.isNotEmpty) {
+      // For the first ever gesture we create, force primary love language
       category = byLove.first;
     } else {
       final catIndex = weekStart.millisecondsSinceEpoch % ordered.length;

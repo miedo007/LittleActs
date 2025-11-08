@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,6 +26,15 @@ class NudgeOfWeekScreen extends ConsumerWidget {
 
     final WeeklyGesture current = notifier.currentWeek();
     final bool isReady = current.id.isNotEmpty && current.title.isNotEmpty;
+
+    Future<void> markCurrentDone() async {
+      HapticFeedback.mediumImpact();
+      await notifier.markComplete(current.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nice! Marked as done.')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text("This Week's Nudge")),
@@ -65,25 +75,9 @@ class NudgeOfWeekScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Pressable(
-                          onTap: current.completed
-                              ? null
-                              : () async {
-                                  await notifier.markComplete(current.id);
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Nice! Marked as done.')),
-                                  );
-                                },
+                          onTap: current.completed ? null : markCurrentDone,
                           child: FilledButton.icon(
-                            onPressed: current.completed
-                                ? null
-                                : () async {
-                                    await notifier.markComplete(current.id);
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Nice! Marked as done.')),
-                                    );
-                                  },
+                            onPressed: current.completed ? null : markCurrentDone,
                             icon: const Icon(Icons.favorite),
                             label: Text(current.completed ? 'Completed' : 'Mark as done'),
                           ),

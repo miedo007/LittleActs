@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:nudge/models/partner.dart';
+import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/style/palette.dart';
@@ -148,6 +149,7 @@ class _LoveLanguageQuizScreenState extends ConsumerState<LoveLanguageQuizScreen>
       notificationOptIn: current?.notificationOptIn ?? false,
     );
     await ref.read(partnerProvider.notifier).savePartner(updated);
+    await ref.read(weeklyGesturesProvider.notifier).alignFirstActWithPrimary();
     // Mark onboarding + quiz as completed right at quiz finish
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_completed_setup', true);

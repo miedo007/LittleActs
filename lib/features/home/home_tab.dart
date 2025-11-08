@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/models/weekly_gesture.dart';
@@ -212,6 +213,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               onPressed: g.completed
                   ? null
                   : () async {
+                      HapticFeedback.mediumImpact();
                       await notifier.markComplete(g.id);
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context)
@@ -251,6 +253,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               onPressed: bonus.completed
                   ? null
                   : () async {
+                      HapticFeedback.mediumImpact();
                       await notifier.markComplete(bonus.id);
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context)

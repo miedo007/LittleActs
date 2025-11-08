@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
@@ -224,6 +225,7 @@ class PaywallScreen extends ConsumerWidget {
                 onPressed: isPro || purchasing
                     ? null
                     : () async {
+                        HapticFeedback.mediumImpact();
                         try {
                           ref.read(_purchasingProvider.notifier).state = true;
                           final plan = ref.read(_planProvider);
@@ -291,6 +293,7 @@ class PaywallScreen extends ConsumerWidget {
                     onPressed: purchasing
                         ? null
                         : () async {
+                            HapticFeedback.mediumImpact();
                             try {
                               ref.read(_purchasingProvider.notifier).state = true;
                               await ref.read(premiumProvider.notifier).restore();

@@ -1,6 +1,7 @@
 ﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -110,8 +111,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                     ),
                     onPressed: _index < 3
-                        ? _next
-                        : () async {
+                        ? () {
+                            HapticFeedback.mediumImpact();
+                            _next();
+                          }
+                        : () {
+                            HapticFeedback.mediumImpact();
                             if (!context.mounted) return;
                             context.goNamed('partnerProfile');
                           },
@@ -445,7 +450,6 @@ class _Dots extends StatelessWidget {
     );
   }
 }
-
 
 
 
