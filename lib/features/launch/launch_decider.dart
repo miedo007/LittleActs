@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/constants/storage_keys.dart';
 
 class LaunchDeciderScreen extends StatefulWidget {
   const LaunchDeciderScreen({super.key});
@@ -23,12 +24,13 @@ class _LaunchDeciderScreenState extends State<LaunchDeciderScreen> {
     final done = prefs.getBool('has_completed_setup') ?? false;
     final isPremium =
         prefs.getBool(PremiumNotifier.entitlementPrefsKey) ?? false;
+    final softUnlocked = prefs.getBool(StorageKeys.paywallSoftUnlock) ?? false;
     if (!mounted) return;
     if (!done) {
       context.goNamed('onboarding');
       return;
     }
-    if (!isPremium) {
+    if (!isPremium && !softUnlocked) {
       context.goNamed('paywall');
       return;
     }

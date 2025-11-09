@@ -84,10 +84,10 @@ class NotificationService {
 
   Future<bool> requestPermissionsOnce() async {
     final prefs = await SharedPreferences.getInstance();
-    final alreadyPrompted = prefs.getBool(_permissionPromptKey) ?? false;
-    if (alreadyPrompted) return true;
+    final stored = prefs.getBool(_permissionPromptKey);
+    if (stored != null) return stored;
     final granted = await requestPermissions();
-    await prefs.setBool(_permissionPromptKey, true);
+    await prefs.setBool(_permissionPromptKey, granted);
     return granted;
   }
 

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:nudge/shared/style/palette.dart';
+import 'package:nudge/shared/widgets/premium_lock_card.dart';
 
 class ProfileInsightsScreen extends ConsumerWidget {
   const ProfileInsightsScreen({super.key});
@@ -13,6 +15,7 @@ class ProfileInsightsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final partner = ref.watch(partnerProvider);
     final cs = Theme.of(context).colorScheme;
+    final isPremium = ref.watch(premiumProvider);
 
     final entries = <_LangInfo>[
       _LangInfo('Words of Affirmation', partner?.wordsOfAffirmation ?? 0, const Color(0xFF6C63FF),
@@ -102,37 +105,20 @@ class ProfileInsightsScreen extends ConsumerWidget {
           ],
           Text('Love Language Breakdown', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          for (final e in withPct)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: e.color.withOpacity(0.5)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(width: 10, height: 10, margin: const EdgeInsets.only(top: 6), decoration: BoxDecoration(color: e.color, shape: BoxShape.circle)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(e.label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-                          ),
-                          Text('${e.percent}%'),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(e.description, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-                    ]),
-                  ),
-                ],
-              ),
+          if (withPct.isEmpty)
+            const PremiumLockCard(
+              title: 'No data yet',
+              description: 'Complete the quiz to unlock insights.',
+            )
+          else if (isPremium)
+            for (final e in withPct) _LangTile(entry: e, colorScheme: cs)
+          else ...[
+            _LangTile(entry: withPct.first, colorScheme: cs),
+            const PremiumLockCard(
+              title: 'Full insights are Premium',
+              description: 'Unlock the rest of the love-language profile.',
             ),
+          ],
             const SizedBox(height: 24),
             Card(
               child: Padding(
@@ -179,6 +165,57 @@ class _LangInfo {
   final int percent;
   const _LangInfo(this.label, this.score, this.color, this.description, {this.percent = 0});
   _LangInfo copyWith({int? percent}) => _LangInfo(label, score, color, description, percent: percent ?? this.percent);
+}
+
+class _LangTile extends StatelessWidget {
+  final _LangInfo entry;
+  final ColorScheme colorScheme;
+  const _LangTile({required this.entry, required this.colorScheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: entry.color.withOpacity(0.5)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(top: 6),
+            decoration: BoxDecoration(color: entry.color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      entry.label,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Text('${entry.percent}%'),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                entry.description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+            ]),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 String _togetherFor(DateTime since) {

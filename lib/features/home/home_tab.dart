@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nudge/models/weekly_gesture.dart';
 import 'package:nudge/shared/widgets/Providers/gesture_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/shared/widgets/premium_lock_card.dart';
 import 'package:nudge/shared/style/palette.dart';
 
 class HomeTab extends ConsumerStatefulWidget {
@@ -64,6 +65,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     // Bonus generation is triggered once in initState; avoid per-build scheduling.
 
     final cs = Theme.of(context).colorScheme;
+    final isPro = ref.watch(premiumProvider);
     final title = current.title.isEmpty ? "This Week's Little Act" : current.title;
     final streak = notifier.streak();
 
@@ -82,13 +84,24 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         Text('Extra inspiration',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
-        if (bonus == null)
-          Text('Generating a small extra idea…',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant))
+        if (isPro)
+          (bonus == null
+              ? Text('Generating a small extra idea…',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant))
+              : _bonusCard(context, ref, bonus))
         else
-          _bonusCard(context, ref, bonus),
+          const PremiumLockCard(
+            title: 'Bonus inspiration is Premium',
+            description: 'Unlock weekly extra ideas tailored to your partner.',
+          ),
         const SizedBox(height: 16),
-        _upNextWeekCard(context, nextPreview),
+        if (isPro)
+          _upNextWeekCard(context, nextPreview)
+        else
+          const PremiumLockCard(
+            title: 'See what’s next',
+            description: 'Up-next previews are part of Premium.',
+          ),
       ],
     );
   }

@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
+import 'package:nudge/shared/constants/storage_keys.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nudge/shared/style/palette.dart';
 
@@ -16,11 +20,40 @@ final _planProvider = StateProvider<_Plan>((ref) => _Plan.weekly);
 final _purchasingProvider = StateProvider<bool>((ref) => false);
 final _trialEnabledProvider = StateProvider<bool>((ref) => true);
 
-class PaywallScreen extends ConsumerWidget {
+class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
+}
+
+class _PaywallScreenState extends ConsumerState<PaywallScreen> {
+  bool _showSkip = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() => _showSkip = true);
+      }
+    });
+  }
+
+  Future<void> _markSoftUnlock() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(StorageKeys.paywallSoftUnlock, true);
+  }
+
+  Future<void> _skipPaywall(BuildContext context) async {
+    await _markSoftUnlock();
+    if (!mounted) return;
+    context.goNamed('home');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final products = ref.watch(premiumProductsProvider);
     final isPro = ref.watch(premiumProvider);
     final purchasing = ref.watch(_purchasingProvider);
@@ -28,13 +61,14 @@ class PaywallScreen extends ConsumerWidget {
 
     ref.listen<bool>(premiumProvider, (prev, next) async {
       if (prev != true && next == true) {
-        await NotificationService().requestPermissionsOnce();
+        final granted = await NotificationService().requestPermissionsOnce();
         final partner = ref.read(partnerProvider);
-        if (partner != null) {
+        if (partner != null && granted) {
           await ref.read(partnerProvider.notifier).savePartner(
                 partner.copyWith(notificationOptIn: true),
               );
         }
+        await _markSoftUnlock();
         if (!context.mounted) return;
         final router = GoRouter.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,14 +85,16 @@ class PaywallScreen extends ConsumerWidget {
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: CalmBackground(
-        decorative: true,
-        intensityLight: 0.14,
-        intensityDark: 0.30,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      body: Stack(
+        children: [
+          CalmBackground(
+            decorative: true,
+            intensityLight: 0.14,
+            intensityDark: 0.30,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
               const SizedBox(height: 8),
               Center(
                 child: Column(
@@ -211,9 +247,26 @@ class PaywallScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 60),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+          if (_showSkip)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              right: 16,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF2F3B49),
+                  backgroundColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                onPressed: () => _skipPaywall(context),
+                child: const Text('Skip for now'),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(

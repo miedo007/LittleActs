@@ -9,10 +9,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
 import 'package:nudge/shared/widgets/Providers/milestones_provider.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/style/palette.dart';
 import 'package:nudge/models/milestone.dart';
+import 'package:nudge/shared/widgets/premium_lock_card.dart';
 
 class PartnerSummaryTab extends ConsumerStatefulWidget {
   const PartnerSummaryTab({super.key});
@@ -29,6 +31,7 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
     final ref = this.ref;
     final partner = ref.watch(partnerProvider);
     final cs = Theme.of(context).colorScheme;
+    final isPremium = ref.watch(premiumProvider);
 
     if (partner == null) {
       return Center(
@@ -71,6 +74,12 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
 
     final milestones = [...ref.watch(milestonesProvider)];
     milestones.sort((a, b) => a.nextOccurrence().compareTo(b.nextOccurrence()));
+    final sortedPct = pct.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final primaryLabel =
+        sortedPct.isNotEmpty ? sortedPct.first.key : 'Primary love language';
+    final primaryPercent =
+        sortedPct.isNotEmpty ? sortedPct.first.value : 0;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -153,21 +162,25 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
                   children: [
                     Text(
                       'Love Language',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     TextButton(
-                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
+                      style: TextButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).colorScheme.primary),
                       onPressed: () => context.pushNamed('profileInsights'),
                       child: const Text('View full profile'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                RepaintBoundary(
-                  child: _LoveDonut(
-                    pct: pct.map((k, v) => MapEntry(k, v.toDouble())),
-                    colorFor: colorFor,
-                  ),
+                _PrimaryOnlyCard(
+                  label: primaryLabel,
+                  percent: primaryPercent,
+                  isPremium: isPremium,
                 ),
               ],
             ),
@@ -179,18 +192,34 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
           children: [
             Text(
               'Milestones',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
-            TextButton.icon(
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary),
-              onPressed: () => context.pushNamed('milestonePlanner'),
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Add milestone'),
-            ),
+            if (isPremium)
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary),
+                onPressed: () => context.pushNamed('milestonePlanner'),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Add milestone'),
+              )
+            else
+              TextButton(
+                onPressed: () => context.goNamed('paywall'),
+                child: const Text('Unlock'),
+              ),
           ],
         ),
         const SizedBox(height: 6),
-        if (milestones.isEmpty)
+        if (!isPremium)
+          const PremiumLockCard(
+            title: 'Milestones are Premium',
+            description:
+                'Unlock reminders for birthdays, anniversaries, and more.',
+          )
+        else if (milestones.isEmpty)
           Text('No milestones yet. Add birthdays, anniversaries, and more.',
               style: Theme.of(context)
                   .textTheme
@@ -236,7 +265,8 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
                       ),
                       const SizedBox(width: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppColors.button.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
@@ -247,7 +277,9 @@ class _PartnerSummaryTabState extends ConsumerState<PartnerSummaryTab> {
                           style: Theme.of(context)
                               .textTheme
                               .labelMedium
-                              ?.copyWith(color: AppColors.button, fontWeight: FontWeight.w700),
+                              ?.copyWith(
+                                  color: AppColors.button,
+                                  fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
@@ -341,6 +373,81 @@ class _AvatarSection extends StatelessWidget {
           ),
         )
       ],
+    );
+  }
+}
+
+
+class _PrimaryOnlyCard extends StatelessWidget {
+  final String label;
+  final num percent;
+  final bool isPremium;
+  const _PrimaryOnlyCard({
+    required this.label,
+    required this.percent,
+    required this.isPremium,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = percent.clamp(0, 100).toInt();
+    final cs = Theme.of(context).colorScheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Primary love language',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: AppColors.button, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$pct% of their love-language profile',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              isPremium
+                  ? 'Tap “View full profile” for the complete breakdown.'
+                  : 'Unlock Premium to reveal all five languages with detailed guidance.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            if (!isPremium) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.button,
+                    minimumSize: const Size(0, 40),
+                  ),
+                  onPressed: () => context.goNamed('paywall'),
+                  child: const Text('Unlock Premium'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
