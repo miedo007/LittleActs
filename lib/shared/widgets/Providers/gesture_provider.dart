@@ -375,6 +375,40 @@ class WeeklyGesturesNotifier extends StateNotifier<List<WeeklyGesture>> {
     await _save();
   }
 
+  Future<void> simulateYearOfActs({int weeks = 52}) async {
+    if (kReleaseMode) return;
+    final partner = _ref.read(partnerProvider);
+    final nowWeek = _startOfWeek(DateTime.now());
+    final generated = <WeeklyGesture>[];
+    for (int i = 0; i < weeks; i++) {
+      final ws = nowWeek.subtract(Duration(days: 7 * i));
+      final id = _weekId(ws);
+      final existingIndex = state.indexWhere((g) => g.id == id);
+      WeeklyGesture gesture;
+      if (existingIndex >= 0) {
+        gesture = state[existingIndex].copyWith(
+          completed: true,
+          completedAt: ws.add(Duration(days: (i % 5) + 1)),
+        );
+      } else {
+        gesture = _generateGesture(partner, ws).copyWith(
+          id: id,
+          weekStart: ws,
+          completed: true,
+          completedAt: ws.add(Duration(days: (i % 5) + 1)),
+        );
+      }
+      generated.add(gesture);
+    }
+    final remaining = [
+      for (final g in state)
+        if (!generated.any((ng) => ng.id == g.id)) g,
+    ];
+    state = [...remaining, ...generated]
+      ..sort((a, b) => a.weekStart.compareTo(b.weekStart));
+    await _save();
+  }
+
   // ---------- Generation Rules (with Premium gating) ----------
   String _primaryLoveCode(Partner? partner) {
     final p = partner;

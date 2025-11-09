@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:intl/intl.dart";
@@ -87,27 +88,52 @@ class LoveBankTab extends ConsumerWidget {
             ),
           )
         else
-          for (final g in completed.take(5))
-            Card(
-              child: ListTile(
-                leading: Text(_emojiGlyph(g.category), style: const TextStyle(fontSize: 20)),
-                title: Text(
-                  g.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  DateFormat.yMMMEd().format(g.completedAt ?? g.weekStart),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                ),
-                trailing: Text(
-                  g.category.toUpperCase(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: _loveColor(context, g.category)),
-                ),
-              ),
+      for (final g in completed.take(5))
+        Card(
+          child: ListTile(
+            leading: Text(_emojiGlyph(g.category), style: const TextStyle(fontSize: 20)),
+            title: Text(
+              g.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
+            subtitle: Text(
+              DateFormat.yMMMEd().format(g.completedAt ?? g.weekStart),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            trailing: Text(
+              g.category.toUpperCase(),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: _loveColor(context, g.category)),
+            ),
+          ),
+        ),
+        if (!kReleaseMode) ...[
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.button,
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              await notifier.simulateYearOfActs();
+              messenger.showSnackBar(
+                const SnackBar(content: Text('Simulated a year of acts (debug only)')),
+              );
+            },
+            icon: const Icon(Icons.bolt),
+            label: const Text('Simulate Year (debug)'),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Populates the Love Bank with 12 months of completed acts for fast screenshots.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
       ],
     );
   }

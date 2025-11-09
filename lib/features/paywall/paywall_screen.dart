@@ -1,10 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
+import 'package:nudge/models/partner.dart';
 import 'package:nudge/shared/Services/notification_service.dart';
+import 'package:nudge/shared/widgets/Providers/partner_provider.dart';
+import 'package:nudge/shared/widgets/Providers/premium_provider.dart';
 import 'package:nudge/shared/widgets/calm_background.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nudge/shared/style/palette.dart';
@@ -27,8 +28,13 @@ class PaywallScreen extends ConsumerWidget {
 
     ref.listen<bool>(premiumProvider, (prev, next) async {
       if (prev != true && next == true) {
-        // Ask for notification permission only after the user subscribes
-        await NotificationService().requestPermissions();
+        await NotificationService().requestPermissionsOnce();
+        final partner = ref.read(partnerProvider);
+        if (partner != null) {
+          await ref.read(partnerProvider.notifier).savePartner(
+                partner.copyWith(notificationOptIn: true),
+              );
+        }
         if (!context.mounted) return;
         final router = GoRouter.of(context);
         ScaffoldMessenger.of(context).showSnackBar(

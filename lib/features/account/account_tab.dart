@@ -176,18 +176,6 @@ class AccountTab extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(height: 8),
-
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.delete_forever_outlined),
-            title: const Text('Delete Data'),
-            textColor: Colors.redAccent,
-            iconColor: Colors.redAccent,
-            onTap: deleteAllData,
-          ),
-        ),
-        const SizedBox(height: 8),
         if (!kReleaseMode)
           Card(
             child: ListTile(

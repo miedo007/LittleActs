@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -26,6 +27,7 @@ class NotificationService {
 
   bool _initialized = false;
   static bool _tzReady = false;
+  static const _permissionPromptKey = 'notifications_prompted_once';
 
   Future<void> _ensureTz() async {
     if (_tzReady) return;
@@ -78,6 +80,15 @@ class NotificationService {
     final iosGranted =
         await iosImpl?.requestPermissions(alert: true, badge: true, sound: true) ?? true;
     return androidGranted && iosGranted;
+  }
+
+  Future<bool> requestPermissionsOnce() async {
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyPrompted = prefs.getBool(_permissionPromptKey) ?? false;
+    if (alreadyPrompted) return true;
+    final granted = await requestPermissions();
+    await prefs.setBool(_permissionPromptKey, true);
+    return granted;
   }
 
   Future<void> cancelAll() async {
